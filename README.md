@@ -1,1 +1,24 @@
-# jigsaw-puzzle
+# Jigsaw Puzzle
+
+A calm, senior-friendly jigsaw puzzle game. PixiJS v8 + TypeScript + Vite, later packaged for Android with Capacitor. Fully offline, no ads.
+
+See [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) for the full plan and milestones.
+
+## Development
+
+```bash
+npm install
+npm run dev        # dev server (also reachable from a phone on the same network)
+npm test           # unit tests (Vitest)
+npm run lint       # ESLint
+npm run typecheck  # TypeScript
+npm run build      # production build into dist/
+```
+
+## Structure
+
+- `src/game/core/` – pure puzzle logic (cut geometry, model, snapping, scattering, save format). No Pixi/DOM; unit-tested in `tests/`.
+- `src/game/render/` – Pixi rendering: piece texture atlas, puzzle view, camera, pointer input.
+- `src/game/GameController.ts` – connects core, rendering and input; renders only on demand.
+- `src/ui/` – HTML/CSS user interface (menus and dialogs).
+- `src/i18n/` – German/English texts; language follows the system language.

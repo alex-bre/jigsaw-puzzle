@@ -10,6 +10,8 @@
   --on-primary: #ffffff;
   --focus: #f2b134;
   --border: #d6cbb9;
+  --danger: #b3261e;
+  --danger-press: #8c1d18;
 
   --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
   --text-base: 20px;
@@ -478,6 +480,9 @@ body {
   flex-direction: column;
   padding: 10px 12px 12px;
   line-height: 1.25;
+  /* Long German words ("Wasserschwein") must wrap instead of being cut off. */
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .card-add {
@@ -581,6 +586,173 @@ body {
 }
 
 .credit a {
+  color: var(--primary);
+}
+
+/* Status badges on picture cards */
+.card-media {
+  position: relative;
+  display: block;
+}
+
+.badge {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.badge .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.badge-solved {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.badge-started {
+  background: var(--focus);
+  color: #2a1d00;
+}
+
+/* Danger buttons (delete) */
+.btn-danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+
+.btn-danger:active {
+  background: var(--danger-press);
+}
+
+.btn-danger-quiet {
+  border-color: transparent;
+  background: transparent;
+  color: var(--danger);
+}
+
+/* Setup: continue + best times */
+.setup-continue {
+  margin-bottom: 8px;
+}
+
+.two-line {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.2;
+}
+
+.two-line small {
+  font-size: 17px;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.count-best {
+  margin-top: 2px;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: var(--primary) !important;
+}
+
+.setup-delete {
+  margin-top: 20px;
+}
+
+/* My puzzles */
+.puzzle-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.puzzle-row {
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.puzzle-main {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.puzzle-main:active {
+  background: var(--surface-2);
+}
+
+.puzzle-main img {
+  width: 112px;
+  height: 84px;
+  flex: none;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.puzzle-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+.puzzle-text .muted {
+  font-size: 17px;
+}
+
+.puzzle-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 0 12px 12px;
+}
+
+/* Grows to fill the row; wraps below the delete button rather than clipping its label. */
+.puzzle-actions .btn-primary {
+  flex: 1 1 auto;
+}
+
+.puzzle-actions .btn {
+  white-space: nowrap;
+}
+
+.empty {
+  display: grid;
+  gap: 16px;
+  max-width: 560px;
+}
+
+.new-best {
+  margin: -8px 0 16px;
+  font-size: var(--text-lg);
+  font-weight: 800;
+  text-align: center;
   color: var(--primary);
 }
 

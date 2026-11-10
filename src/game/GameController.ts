@@ -4,6 +4,7 @@ import { chooseGrid } from './core/grid';
 import { createPuzzle, isComplete, lockedCount, moveGroup, type PuzzleState } from './core/model';
 import { computePlayArea, contentBounds, type Rect } from './core/playArea';
 import { randomSeed } from './core/rng';
+import { deserializePuzzle, serializePuzzle, type PuzzleSave } from './core/serialize';
 import { dropGroup } from './core/snap';
 import {
   canReturnToTray,
@@ -27,6 +28,8 @@ export interface GameEvents {
   onSnap(locked: boolean): void;
   /** Any touch on the game (e.g. to unlock audio on the first touch). */
   onActivity(): void;
+  /** The puzzle changed in a way worth saving (piece moved, tray sorted, …). */
+  onStateChange(): void;
 }
 
 export interface GameLabels {
@@ -146,6 +149,39 @@ export class GameController {
     this.show(state, image);
   }
 
+  /**
+   * Restores a saved puzzle. The image must be the same picture at the same size it was cut
+   * from; the piece shapes are regenerated from the saved seed. Throws on invalid saves.
+   */
+  resumePuzzle(save: unknown, image: SourceImage): void {
+    const state = deserializePuzzle(save);
+    if (state.imageWidth !== image.width || state.imageHeight !== image.height) {
+      throw new Error(
+        `Picture size changed (${image.width}×${image.height}, saved ${state.imageWidth}×${state.imageHeight})`,
+      );
+    }
+    this.show(state, image);
+  }
+
+  /** Current puzzle in save format, with the play time up to this moment. */
+  snapshot(): PuzzleSave | null {
+    if (!this.state) return null;
+    const save = serializePuzzle(this.state);
+    if (this.resumedAt !== null) {
+      save.elapsedMs = Math.round(this.state.elapsedMs + performance.now() - this.resumedAt);
+    }
+    return save;
+  }
+
+  /** Id of the picture of the puzzle currently loaded, if any. */
+  get puzzleId(): string | null {
+    return this.state?.imageId ?? null;
+  }
+
+  get placedCount(): number {
+    return this.state ? lockedCount(this.state) : 0;
+  }
+
   private show(state: PuzzleState, image: SourceImage): void {
     this.clear();
     const cut = createCut(state.cols, state.rows, state.imageWidth, state.imageHeight, state.seed);
@@ -221,6 +257,7 @@ export class GameController {
     this.refreshTray();
     this.tray?.scrollToStart();
     this.invalidate();
+    this.events.onStateChange();
   }
 
   private refreshTray(): void {
@@ -367,6 +404,7 @@ export class GameController {
         this.view.prepareForTray(id);
         this.refreshTray();
         this.invalidate();
+        this.events.onStateChange();
         return;
       }
     }
@@ -391,6 +429,8 @@ export class GameController {
     if (isComplete(state)) {
       this.pauseClock();
       this.events.onComplete(state.elapsedMs, state.pieces.length);
+    } else {
+      this.events.onStateChange();
     }
     this.invalidate();
   }

@@ -8,6 +8,7 @@ export type Route =
   | { name: 'category'; categoryId: string }
   | { name: 'setup'; imageId: string }
   | { name: 'play' }
+  | { name: 'puzzles' }
   | { name: 'settings' }
   | { name: 'credits' };
 
@@ -20,6 +21,8 @@ export function parseRoute(hash: string): Route {
       return parts[1] ? { name: 'setup', imageId: parts[1] } : { name: 'pictures' };
     case 'play':
       return { name: 'play' };
+    case 'puzzles':
+      return { name: 'puzzles' };
     case 'settings':
       return { name: 'settings' };
     case 'credits':

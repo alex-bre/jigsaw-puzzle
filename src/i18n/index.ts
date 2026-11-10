@@ -47,6 +47,26 @@ const en = {
   creditBy: 'by {author}',
   creditSource: 'Source',
   softwareCredits: 'This app uses PixiJS (MIT licence).',
+  myPuzzles: 'My puzzles',
+  myPuzzlesCount: 'My puzzles ({n})',
+  noPuzzles: 'No puzzles in progress. Choose a picture to start one.',
+  continueShort: 'Continue',
+  solved: 'Solved',
+  started: 'Started',
+  bestTime: 'Best: {time}',
+  newBest: 'New best time!',
+  startOverTitle: 'Start again?',
+  startOverText: 'Your progress on this picture will be lost.',
+  startOver: 'Start again',
+  cancel: 'Cancel',
+  delete: 'Delete',
+  deletePuzzleTitle: 'Delete this puzzle?',
+  deletePuzzleText: 'Your progress on "{title}" will be lost.',
+  deletePhoto: 'Delete photo',
+  deletePhotoTitle: 'Delete this photo?',
+  deletePhotoText: 'It is removed from this app only. The photo in your gallery is not affected.',
+  restoreError: 'This puzzle could not be restored. Please start it again.',
+  lastPlayed: 'Last played {date}',
 };
 
 export type MessageKey = keyof typeof en;
@@ -100,6 +120,27 @@ const de: Record<MessageKey, string> = {
   creditBy: 'von {author}',
   creditSource: 'Quelle',
   softwareCredits: 'Diese App verwendet PixiJS (MIT-Lizenz).',
+  myPuzzles: 'Meine Puzzles',
+  myPuzzlesCount: 'Meine Puzzles ({n})',
+  noPuzzles: 'Noch keine angefangenen Puzzles. Wählen Sie ein Bild, um eines zu beginnen.',
+  continueShort: 'Weiterspielen',
+  solved: 'Gelöst',
+  started: 'Begonnen',
+  bestTime: 'Bestzeit: {time}',
+  newBest: 'Neue Bestzeit!',
+  startOverTitle: 'Neu beginnen?',
+  startOverText: 'Ihr bisheriger Fortschritt bei diesem Bild geht verloren.',
+  startOver: 'Neu beginnen',
+  cancel: 'Abbrechen',
+  delete: 'Löschen',
+  deletePuzzleTitle: 'Dieses Puzzle löschen?',
+  deletePuzzleText: 'Ihr Fortschritt bei „{title}“ geht verloren.',
+  deletePhoto: 'Foto löschen',
+  deletePhotoTitle: 'Dieses Foto löschen?',
+  deletePhotoText:
+    'Es wird nur aus dieser App entfernt. Das Foto in Ihrer Galerie bleibt erhalten.',
+  restoreError: 'Dieses Puzzle konnte nicht wiederhergestellt werden. Bitte neu beginnen.',
+  lastPlayed: 'Zuletzt gespielt: {date}',
 };
 
 const dictionaries = { en, de } as const;
@@ -140,4 +181,9 @@ export function formatDuration(ms: number): string {
   const s = total % 60;
   const pad = (n: number) => String(n).padStart(2, '0');
   return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+}
+
+/** Short, friendly date in the current language, e.g. "10 Nov 2026, 14:05". */
+export function formatDate(ms: number): string {
+  return new Intl.DateTimeFormat(current, { dateStyle: 'medium', timeStyle: 'short' }).format(ms);
 }

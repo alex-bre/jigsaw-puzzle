@@ -1,7 +1,7 @@
 import { catalog, imagesIn, thumbUrl } from '../../content/catalog';
 import { currentLanguage, t } from '../../i18n';
 import { h, icon } from '../dom';
-import { screen, screenHeader, type PictureRef, type ScreenContext } from './context';
+import { screen, screenHeader, statusBadge, type PictureRef, type ScreenContext } from './context';
 
 /** Category overview plus the player's own photos. */
 export function picturesScreen(ctx: ScreenContext): HTMLElement {
@@ -84,7 +84,12 @@ function pictureCard(ctx: ScreenContext, p: PictureRef): HTMLElement {
   return h(
     'button',
     { class: 'card', type: 'button', onclick: () => ctx.go({ name: 'setup', imageId: p.id }) },
-    h('img', { class: 'card-img', src: p.thumbUrl, alt: '', loading: 'lazy' }),
+    h(
+      'span',
+      { class: 'card-media' },
+      h('img', { class: 'card-img', src: p.thumbUrl, alt: '', loading: 'lazy' }),
+      statusBadge(ctx, p.id),
+    ),
     h('span', { class: 'card-label' }, h('strong', {}, p.title)),
   );
 }

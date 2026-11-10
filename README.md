@@ -35,5 +35,6 @@ To add a picture: add an entry to `content/images.json`, run `npm run images`, c
 - `src/ui/` – HTML/CSS user interface: hash router, menu screens (`screens/`), game chrome and dialogs.
 - `src/content/` – picture catalogue (generated `catalog.json` + helpers).
 - `src/settings.ts` – player settings (language, sound, vibration, background).
-- `src/platform/` – device features (currently synthesized sound effects; storage and haptics follow).
+- `src/data/repository.ts` – everything kept on the device: puzzles in progress, best times, own photos, settings.
+- `src/platform/` – device features: storage (IndexedDB on the web; Capacitor in M7), synthesized sound effects.
 - `src/i18n/` – German/English texts; language follows the system language.

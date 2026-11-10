@@ -1,3 +1,4 @@
+import type { SaveMeta, Stats } from '../../data/repository';
 import type { Settings } from '../../settings';
 import { t } from '../../i18n';
 import { h, icon } from '../dom';
@@ -14,11 +15,12 @@ export interface PictureRef {
   categoryId: string;
 }
 
-export interface CurrentPuzzle {
-  picture: PictureRef;
-  placed: number;
-  total: number;
-  complete: boolean;
+export interface ConfirmOptions {
+  title: string;
+  text: string;
+  confirmLabel: string;
+  /** Destructive actions get a warning-coloured confirm button. */
+  danger?: boolean;
 }
 
 /** What screens may use from the app. */
@@ -27,11 +29,17 @@ export interface ScreenContext {
   back(): void;
   settings: Settings;
   updateSettings(patch: Partial<Settings>): void;
-  current: CurrentPuzzle | null;
   picture(id: string): PictureRef | undefined;
   photos: PictureRef[];
   addPhoto(file: File): Promise<PictureRef>;
+  deletePhoto(id: string): Promise<void>;
+  /** Puzzles in progress, most recently played first. */
+  saves: SaveMeta[];
+  stats: Stats;
   startPuzzle(pictureId: string, pieceCount: number): Promise<void>;
+  continuePuzzle(pictureId: string): Promise<void>;
+  deleteSave(pictureId: string): Promise<void>;
+  confirm(options: ConfirmOptions): Promise<boolean>;
 }
 
 export type Screen = (ctx: ScreenContext) => HTMLElement;
@@ -55,4 +63,17 @@ export function screenHeader(ctx: ScreenContext, title: string, showBack = true)
 
 export function screen(...children: (Node | null)[]): HTMLElement {
   return h('div', { class: 'screen' }, h('div', { class: 'screen-inner' }, ...children));
+}
+
+/** "Solved" / "Started 40 %" badge for picture cards. */
+export function statusBadge(ctx: ScreenContext, pictureId: string): HTMLElement | null {
+  const save = ctx.saves.find((s) => s.pictureId === pictureId);
+  if (save) {
+    const pct = Math.round((100 * save.placed) / Math.max(1, save.total));
+    return h('span', { class: 'badge badge-started' }, `${t('started')} · ${pct} %`);
+  }
+  if (ctx.stats[pictureId]?.solved) {
+    return h('span', { class: 'badge badge-solved' }, icon('check'), t('solved'));
+  }
+  return null;
 }

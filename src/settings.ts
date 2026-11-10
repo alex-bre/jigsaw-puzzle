@@ -24,28 +24,7 @@ export const DEFAULT_SETTINGS: Settings = {
   background: 'felt',
 };
 
-// Stored in localStorage for now; milestone 6 moves this behind the storage abstraction
-// (Capacitor Preferences on Android).
-const KEY = 'jigsaw.settings.v1';
-
-/** Reads settings, falling back to defaults for anything missing or invalid. */
-export function loadSettings(): Settings {
-  try {
-    const raw = localStorage.getItem(KEY);
-    return raw ? sanitize(JSON.parse(raw)) : { ...DEFAULT_SETTINGS };
-  } catch {
-    return { ...DEFAULT_SETTINGS };
-  }
-}
-
-export function saveSettings(settings: Settings): void {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(settings));
-  } catch {
-    /* storage unavailable (private mode etc.) – settings simply are not remembered */
-  }
-}
-
+/** Reads stored settings, falling back to defaults for anything missing or invalid. */
 export function sanitize(data: unknown): Settings {
   const d = (data && typeof data === 'object' ? data : {}) as Partial<
     Record<keyof Settings, unknown>

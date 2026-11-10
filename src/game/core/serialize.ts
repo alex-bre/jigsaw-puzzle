@@ -1,9 +1,8 @@
 import type { PuzzleState } from './model';
 
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
-export interface PuzzleSaveV1 {
-  version: 1;
+interface PuzzleSaveBase {
   imageId: string;
   imageWidth: number;
   imageHeight: number;
@@ -16,7 +15,17 @@ export interface PuzzleSaveV1 {
   pieces: [number, number, number, 0 | 1][];
 }
 
-export type PuzzleSave = PuzzleSaveV1;
+export interface PuzzleSaveV1 extends PuzzleSaveBase {
+  version: 1;
+}
+
+export interface PuzzleSaveV2 extends PuzzleSaveBase {
+  version: 2;
+  /** Ids of the pieces in the tray, in tray order. */
+  tray: number[];
+}
+
+export type PuzzleSave = PuzzleSaveV2;
 
 export function serializePuzzle(state: PuzzleState): PuzzleSave {
   return {
@@ -29,6 +38,7 @@ export function serializePuzzle(state: PuzzleState): PuzzleSave {
     seed: state.seed,
     elapsedMs: Math.round(state.elapsedMs),
     pieces: state.pieces.map((p) => [round2(p.x), round2(p.y), p.group, p.locked ? 1 : 0]),
+    tray: [...state.tray],
   };
 }
 
@@ -40,7 +50,8 @@ function round2(v: number): number {
 export function migrateSave(data: unknown): PuzzleSave {
   if (!data || typeof data !== 'object') throw new Error('Invalid save: not an object');
   const version = (data as { version?: unknown }).version;
-  if (version === 1) return data as PuzzleSaveV1;
+  if (version === 1) return { ...(data as PuzzleSaveV1), version: 2, tray: [] };
+  if (version === 2) return data as PuzzleSaveV2;
   throw new Error(`Unsupported save version: ${String(version)}`);
 }
 
@@ -49,6 +60,14 @@ export function deserializePuzzle(data: unknown): PuzzleState {
   const count = save.cols * save.rows;
   if (!Array.isArray(save.pieces) || save.pieces.length !== count) {
     throw new Error('Invalid save: piece count mismatch');
+  }
+  const tray = Array.isArray(save.tray) ? save.tray : [];
+  const inTray = new Set(tray);
+  if (
+    inTray.size !== tray.length ||
+    tray.some((id) => !Number.isInteger(id) || id < 0 || id >= count)
+  ) {
+    throw new Error('Invalid save: bad tray');
   }
   const pieceWidth = save.imageWidth / save.cols;
   const pieceHeight = save.imageHeight / save.rows;
@@ -68,6 +87,7 @@ export function deserializePuzzle(data: unknown): PuzzleState {
       y,
       group,
       locked: locked === 1,
+      inTray: inTray.has(id),
     };
   });
   return {
@@ -81,6 +101,7 @@ export function deserializePuzzle(data: unknown): PuzzleState {
     pieceHeight,
     pieces,
     groups,
+    tray: [...tray],
     elapsedMs: save.elapsedMs,
   };
 }

@@ -1,12 +1,15 @@
-import { Container, Graphics, Sprite } from 'pixi.js';
+import { Container, Graphics, Sprite, Texture } from 'pixi.js';
 import { polygonContains } from '../core/cut';
 import type { PuzzleState } from '../core/model';
 import type { PieceGraphics } from './PieceFactory';
 
 const SHADOW_REST = { offset: 0.025, alpha: 0.4 };
 const SHADOW_LIFTED = { offset: 0.07, alpha: 0.32 };
+const GHOST_ALPHA = 0.3;
+const FLASH_MS = 520;
+const FLASH_TINT = 0xfff3b0;
 
-class PieceView extends Container {
+export class PieceView extends Container {
   readonly shadow: Sprite;
   readonly sprite: Sprite;
   /** Visual offset (for snap animations), added to the model position. */
@@ -36,19 +39,30 @@ interface Tween {
   duration: number;
 }
 
-/** Everything inside the camera-transformed world: board, locked pieces, loose pieces. */
+interface Flash {
+  ids: number[];
+  start: number;
+}
+
+/**
+ * Everything inside the camera-transformed world: board, ghost image, locked and loose pieces.
+ * Piece views that sit in the tray are owned (parented and positioned) by the TrayView.
+ */
 export class PuzzleView {
   readonly world = new Container();
+  readonly views: PieceView[] = [];
   private readonly boardLayer = new Container();
   private readonly lockedLayer = new Container();
   private readonly looseLayer = new Container();
-  private readonly views: PieceView[] = [];
   private readonly pieceSize: number;
+  private ghost: Sprite | null = null;
   private tweens: Tween[] = [];
+  private flashes: Flash[] = [];
 
   constructor(
     private readonly state: PuzzleState,
     private readonly gfx: PieceGraphics,
+    private readonly image: CanvasImageSource,
   ) {
     this.pieceSize = Math.min(state.pieceWidth, state.pieceHeight);
     this.world.addChild(this.boardLayer, this.lockedLayer, this.looseLayer);
@@ -63,9 +77,9 @@ export class PuzzleView {
     for (const ids of state.groups.values()) {
       for (const id of ids) {
         const p = state.pieces[id];
-        const view = this.views[id];
-        if (p.locked) this.lockView(view);
-        else this.looseLayer.addChild(view);
+        if (p.inTray) continue;
+        if (p.locked) this.lockView(this.views[id]);
+        else this.looseLayer.addChild(this.views[id]);
       }
     }
     this.syncAll();
@@ -95,11 +109,26 @@ export class PuzzleView {
     return g;
   }
 
+  /** Shows the whole picture faintly on the board as a guide. Created on first use. */
+  setGhostVisible(visible: boolean): void {
+    if (visible && !this.ghost) {
+      // skipCache: the source canvas may be reused for the next puzzle after we destroy this.
+      this.ghost = new Sprite(Texture.from(this.image as HTMLCanvasElement, true));
+      this.ghost.width = this.state.imageWidth;
+      this.ghost.height = this.state.imageHeight;
+      this.ghost.alpha = GHOST_ALPHA;
+      this.boardLayer.addChild(this.ghost);
+    }
+    if (this.ghost) this.ghost.visible = visible;
+  }
+
   private setElevation(view: PieceView, lifted: boolean): void {
     const e = lifted ? SHADOW_LIFTED : SHADOW_REST;
     const o = this.pieceSize * e.offset;
     view.shadow.position.set(-this.gfx.pad + o * 0.6, -this.gfx.pad + o);
     view.shadow.alpha = e.alpha;
+    view.shadow.tint = 0x000000;
+    view.shadow.visible = true;
   }
 
   private lockView(view: PieceView): void {
@@ -117,7 +146,18 @@ export class PuzzleView {
 
   private syncView(view: PieceView): void {
     const p = this.state.pieces[view.pieceId];
+    if (p.inTray) return;
     view.position.set(p.x + view.animX, p.y + view.animY);
+  }
+
+  /** Moves a piece view (e.g. just taken from the tray) onto the board as a loose piece. */
+  attachLoose(id: number): void {
+    const view = this.views[id];
+    view.scale.set(1);
+    view.visible = true;
+    this.looseLayer.addChild(view);
+    this.setElevation(view, false);
+    this.syncView(view);
   }
 
   /** Brings a group to the front and gives it a lifted look while dragging. */
@@ -142,6 +182,13 @@ export class PuzzleView {
     }
   }
 
+  /** Resets a piece's look before it is handed to the tray. */
+  prepareForTray(id: number): void {
+    const view = this.views[id];
+    view.animX = view.animY = 0;
+    this.setElevation(view, false);
+  }
+
   /** Animates pieces from their old visual position (offset by -dx,-dy) to the model position. */
   animateSnap(ids: number[], dx: number, dy: number, now: number): void {
     if (dx === 0 && dy === 0) return;
@@ -153,21 +200,51 @@ export class PuzzleView {
     this.syncPieces(ids);
   }
 
+  /** A short warm glow around pieces that just snapped together or into place. */
+  flash(ids: number[], now: number): void {
+    this.flashes = this.flashes.filter((f) => !f.ids.some((id) => ids.includes(id)));
+    this.flashes.push({ ids: [...ids], start: now });
+    for (const id of ids) {
+      const s = this.views[id].shadow;
+      s.visible = true;
+      s.tint = FLASH_TINT;
+      s.position.set(-this.gfx.pad, -this.gfx.pad);
+    }
+  }
+
   /** Advances animations. Returns true while anything is still animating. */
   update(now: number): boolean {
-    if (this.tweens.length === 0) return false;
-    this.tweens = this.tweens.filter((tw) => {
-      const t = Math.min(1, (now - tw.start) / tw.duration);
-      const k = 1 - (1 - t) ** 3; // ease-out cubic
-      for (const id of tw.ids) {
-        const view = this.views[id];
-        view.animX = tw.fromX * (1 - k);
-        view.animY = tw.fromY * (1 - k);
-        this.syncView(view);
-      }
-      return t < 1;
-    });
-    return this.tweens.length > 0;
+    if (this.tweens.length > 0) {
+      this.tweens = this.tweens.filter((tw) => {
+        const t = Math.min(1, (now - tw.start) / tw.duration);
+        const k = 1 - (1 - t) ** 3; // ease-out cubic
+        for (const id of tw.ids) {
+          const view = this.views[id];
+          view.animX = tw.fromX * (1 - k);
+          view.animY = tw.fromY * (1 - k);
+          this.syncView(view);
+        }
+        return t < 1;
+      });
+    }
+    if (this.flashes.length > 0) {
+      this.flashes = this.flashes.filter((f) => {
+        const t = Math.max(0, Math.min(1, (now - f.start) / FLASH_MS));
+        // Quick rise, slow fade.
+        const a = t < 0.15 ? t / 0.15 : 1 - (t - 0.15) / 0.85;
+        for (const id of f.ids) {
+          const view = this.views[id];
+          if (t >= 1) {
+            if (this.state.pieces[id].locked) view.shadow.visible = false;
+            else this.setElevation(view, false);
+          } else {
+            view.shadow.alpha = 0.95 * a;
+          }
+        }
+        return t < 1;
+      });
+    }
+    return this.tweens.length > 0 || this.flashes.length > 0;
   }
 
   /**
@@ -199,6 +276,9 @@ export class PuzzleView {
   }
 
   destroy(): void {
+    // Tray-owned views are not children of the world; destroy them explicitly.
+    for (const view of this.views) if (!view.destroyed) view.destroy({ children: true });
+    if (this.ghost) this.ghost.texture.destroy(true);
     this.world.destroy({ children: true });
     this.gfx.destroy();
   }

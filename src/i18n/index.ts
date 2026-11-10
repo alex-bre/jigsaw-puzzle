@@ -16,6 +16,13 @@ const en = {
   finishedIn: 'You finished the {n}-piece puzzle in {time}.',
   lookAtPicture: 'Look at the picture',
   loading: 'Preparing puzzle…',
+  ghost: 'Preview',
+  ghostHint: 'Show the picture faintly on the board',
+  edges: 'Edges',
+  edgesHint: 'Show only edge pieces in the tray',
+  sort: 'Sort',
+  sortHint: 'Sort the tray: edge pieces first, then by colour',
+  noEdgePieces: 'All edge pieces are placed',
 };
 
 export type MessageKey = keyof typeof en;
@@ -38,6 +45,13 @@ const de: Record<MessageKey, string> = {
   finishedIn: 'Sie haben das Puzzle mit {n} Teilen in {time} gelöst.',
   lookAtPicture: 'Bild ansehen',
   loading: 'Puzzle wird vorbereitet …',
+  ghost: 'Vorschau',
+  ghostHint: 'Das Bild blass auf dem Spielfeld zeigen',
+  edges: 'Ränder',
+  edgesHint: 'Nur Randteile in der Ablage zeigen',
+  sort: 'Sortieren',
+  sortHint: 'Ablage sortieren: erst Randteile, dann nach Farbe',
+  noEdgePieces: 'Alle Randteile sind gelegt',
 };
 
 const dictionaries = { en, de } as const;

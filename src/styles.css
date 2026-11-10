@@ -39,18 +39,35 @@ body {
   line-height: 1.4;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior: none;
+  /* A game, not a document: no accidental text selection while dragging pieces. */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
+/* Portrait: top bar / board + tray / helper toolbar. Landscape: bars side by side on top. */
 #app {
   height: 100%;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-areas: 'top' 'stage' 'tools';
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
+  background: var(--surface);
+}
+
+@media (min-aspect-ratio: 11/10) {
+  #app {
+    grid-template-areas: 'top tools' 'stage stage';
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
 }
 
 /* ---- Top bar ---- */
 .topbar {
+  grid-area: top;
   display: flex;
   align-items: center;
   gap: var(--gap);
@@ -69,11 +86,58 @@ body {
   white-space: nowrap;
 }
 
+/* ---- Helper toolbar ---- */
+.toolbar {
+  grid-area: tools;
+  display: flex;
+  gap: 8px;
+  padding: 6px max(10px, env(safe-area-inset-right)) 6px max(10px, env(safe-area-inset-left));
+  background: var(--surface);
+  z-index: 1;
+}
+
+.tool-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 88px;
+  min-height: 64px;
+  padding: 6px 10px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.tool-btn:active {
+  background: var(--surface-2);
+}
+
+.tool-btn[aria-pressed='true'] {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.tool-btn:focus-visible {
+  outline: 4px solid var(--focus);
+  outline-offset: 2px;
+}
+
 /* ---- Stage ---- */
 .stage {
+  grid-area: stage;
   position: relative;
-  flex: 1;
   min-height: 0;
+  background: var(--felt);
 }
 
 .game-canvas {

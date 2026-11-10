@@ -1,5 +1,5 @@
 import type { Container } from 'pixi.js';
-import type { Rect } from '../core/scatter';
+import type { Rect } from '../core/playArea';
 
 /**
  * Maps world (board) coordinates to screen coordinates: screen = world * scale + offset.
@@ -38,11 +38,6 @@ export class Camera {
     this.x = this.viewWidth / 2 - cx * this.scale;
     this.y = this.viewHeight / 2 - cy * this.scale;
     this.apply();
-  }
-
-  /** Shows the whole play area. */
-  fit(): void {
-    this.fitRect(this.bounds, 12);
   }
 
   fitRect(rect: Rect, padding: number): void {

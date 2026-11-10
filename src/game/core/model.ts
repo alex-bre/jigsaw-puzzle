@@ -10,6 +10,8 @@ export interface PieceState {
   group: number;
   /** Locked pieces sit in their final place on the board and can no longer be moved. */
   locked: boolean;
+  /** Pieces in the tray are not on the board; their x/y is meaningless while there. */
+  inTray: boolean;
 }
 
 export interface PuzzleConfig {
@@ -27,6 +29,8 @@ export interface PuzzleState extends PuzzleConfig {
   pieces: PieceState[];
   /** group id → ids of member pieces. */
   groups: Map<number, number[]>;
+  /** Ids of the pieces in the tray, in tray order. */
+  tray: number[];
   elapsedMs: number;
 }
 
@@ -47,11 +51,12 @@ export function createPuzzle(config: PuzzleConfig): PuzzleState {
         y: row * pieceHeight,
         group: id,
         locked: false,
+        inTray: false,
       });
       groups.set(id, [id]);
     }
   }
-  return { ...config, pieceWidth, pieceHeight, pieces, groups, elapsedMs: 0 };
+  return { ...config, pieceWidth, pieceHeight, pieces, groups, tray: [], elapsedMs: 0 };
 }
 
 export function solvedPosition(state: PuzzleState, piece: PieceState): { x: number; y: number } {

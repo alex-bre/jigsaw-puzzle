@@ -18,7 +18,8 @@ npm run build      # production build into dist/
 ## Structure
 
 - `src/game/core/` – pure puzzle logic (cut geometry, model, snapping, scattering, save format). No Pixi/DOM; unit-tested in `tests/`.
-- `src/game/render/` – Pixi rendering: piece texture atlas, puzzle view, camera, pointer input.
+- `src/game/render/` – Pixi rendering: piece texture atlas, puzzle view (board), tray view, camera, pointer input.
 - `src/game/GameController.ts` – connects core, rendering and input; renders only on demand.
-- `src/ui/` – HTML/CSS user interface (menus and dialogs).
+- `src/ui/` – HTML/CSS user interface (top bar, helper toolbar, dialogs).
+- `src/platform/` – device features (currently synthesized sound effects; storage and haptics follow).
 - `src/i18n/` – German/English texts; language follows the system language.

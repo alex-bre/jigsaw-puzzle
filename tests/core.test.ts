@@ -10,7 +10,17 @@ import {
   type PuzzleState,
 } from '../src/game/core/model';
 import { dropGroup, findSnap } from '../src/game/core/snap';
-import { computePlayArea, scatterPieces } from '../src/game/core/scatter';
+import { computePlayArea, contentBounds } from '../src/game/core/playArea';
+import {
+  canReturnToTray,
+  colorSortKey,
+  fillTray,
+  isEdgePiece,
+  returnToTray,
+  sortTray,
+  takeFromTray,
+  visibleTray,
+} from '../src/game/core/tray';
 import { deserializePuzzle, serializePuzzle } from '../src/game/core/serialize';
 
 function puzzle(cols = 4, rows = 3): PuzzleState {
@@ -188,36 +198,109 @@ describe('snapping', () => {
   });
 });
 
-describe('scatter', () => {
-  it('places all pieces inside the area and off the board', () => {
-    for (const aspect of [0.5, 1, 1.8]) {
-      const s = createPuzzle({
-        imageId: 'x',
-        imageWidth: 1600,
-        imageHeight: 1200,
-        cols: 8,
-        rows: 6,
-        seed: 1,
-      });
-      const area = computePlayArea(s, aspect);
-      scatterPieces(s, area, 99);
-      for (const p of s.pieces) {
-        expect(p.x).toBeGreaterThanOrEqual(area.x);
-        expect(p.y).toBeGreaterThanOrEqual(area.y);
-        expect(p.x + s.pieceWidth).toBeLessThanOrEqual(area.x + area.width);
-        expect(p.y + s.pieceHeight).toBeLessThanOrEqual(area.y + area.height);
-        const onBoard =
-          p.x + s.pieceWidth > 0 && p.x < 1600 && p.y + s.pieceHeight > 0 && p.y < 1200;
-        expect(onBoard).toBe(false);
-      }
-    }
+describe('tray', () => {
+  it('starts with every piece in the tray, shuffled and deterministic', () => {
+    const s = puzzle(4, 3);
+    fillTray(s, 7);
+    expect([...s.tray].sort((a, b) => a - b)).toEqual(s.pieces.map((p) => p.id));
+    expect(s.tray).not.toEqual(s.pieces.map((p) => p.id));
+    expect(s.pieces.every((p) => p.inTray)).toBe(true);
+    const s2 = puzzle(4, 3);
+    fillTray(s2, 7);
+    expect(s2.tray).toEqual(s.tray);
+  });
+
+  it('takes pieces out and puts single pieces back at a position', () => {
+    const s = puzzle(4, 3);
+    fillTray(s, 1);
+    const [a, b, c] = s.tray;
+    takeFromTray(s, a, 500, 600);
+    expect(s.pieces[a]).toMatchObject({ inTray: false, x: 500, y: 600 });
+    expect(s.tray).not.toContain(a);
+    returnToTray(s, a, c);
+    expect(s.tray.indexOf(a)).toBe(s.tray.indexOf(c) - 1);
+    expect(s.tray.indexOf(b)).toBeLessThan(s.tray.indexOf(a));
+    takeFromTray(s, a, 0, 0);
+    returnToTray(s, a, null);
+    expect(s.tray[s.tray.length - 1]).toBe(a);
+  });
+
+  it('does not accept groups or locked pieces back', () => {
+    const s = puzzle(4, 3);
+    fillTray(s, 1);
+    takeFromTray(s, 0, 1000, 1000);
+    takeFromTray(s, 1, 1100, 1000);
+    dropGroup(s, 1, 5); // joins piece 0
+    expect(canReturnToTray(s, 1)).toBe(false);
+    takeFromTray(s, 5, 100, 100);
+    dropGroup(s, 5, 5); // locks on the board
+    expect(canReturnToTray(s, 5)).toBe(false);
+    expect(() => returnToTray(s, 5, null)).toThrow();
+  });
+
+  it('ignores neighbours that are still in the tray when snapping', () => {
+    const s = puzzle(4, 3);
+    fillTray(s, 1);
+    // Piece 1 still sits in the tray; its stale x/y must not attract piece 0.
+    s.pieces[1].x = 2100;
+    s.pieces[1].y = 2000;
+    takeFromTray(s, 0, 2000, 2000);
+    const res = dropGroup(s, 0, 50);
+    expect(res.snapped).toBe(false);
+    expect(s.pieces[0].group).not.toBe(s.pieces[1].group);
+  });
+
+  it('filters edge pieces and sorts edges first, then by colour', () => {
+    const s = puzzle(4, 4);
+    fillTray(s, 3);
+    const edges = visibleTray(s, true);
+    expect(edges).toHaveLength(12);
+    expect(edges.every((id) => isEdgePiece(s, s.pieces[id]))).toBe(true);
+    const keys = s.pieces.map((p) => 100 - p.id);
+    sortTray(s, keys);
+    const firstInner = s.tray.findIndex((id) => !isEdgePiece(s, s.pieces[id]));
+    expect(firstInner).toBe(12);
+    // Within the edge pieces, sorted by key (descending id here).
+    const edgeIds = s.tray.slice(0, 12);
+    expect(edgeIds).toEqual([...edgeIds].sort((a, b) => b - a));
+  });
+
+  it('colour keys group hues and put greys last', () => {
+    const red = colorSortKey(220, 30, 30);
+    const darkRed = colorSortKey(120, 10, 10);
+    const green = colorSortKey(30, 180, 40);
+    const blue = colorSortKey(30, 60, 200);
+    const grey = colorSortKey(128, 128, 128);
+    expect(Math.floor(red / 100)).toBe(Math.floor(darkRed / 100));
+    expect(darkRed).toBeLessThan(red);
+    expect(red).toBeLessThan(green);
+    expect(green).toBeLessThan(blue);
+    expect(blue).toBeLessThan(grey);
+  });
+});
+
+describe('play area', () => {
+  it('surrounds the board and grows content bounds with loose pieces', () => {
+    const s = puzzle(4, 3);
+    const area = computePlayArea(s);
+    expect(area.x).toBeLessThan(0);
+    expect(area.y).toBeLessThan(0);
+    expect(area.x + area.width).toBeGreaterThan(400);
+    expect(area.y + area.height).toBeGreaterThan(300);
+    fillTray(s, 1);
+    expect(contentBounds(s)).toEqual({ x: 0, y: 0, width: 400, height: 300 });
+    takeFromTray(s, s.tray[0], -200, 50);
+    expect(contentBounds(s).x).toBeLessThan(-200);
   });
 });
 
 describe('serialization', () => {
   it('round-trips the puzzle state', () => {
     const s = puzzle();
-    scatterPieces(s, computePlayArea(s, 1), 5);
+    fillTray(s, 5);
+    takeFromTray(s, 0, 900, 900);
+    takeFromTray(s, 1, 1200, 900);
+    takeFromTray(s, 11, 0, 0);
     mergeGroups(s, 0, 1);
     s.pieces[11].x = 300;
     s.pieces[11].y = 200;
@@ -226,12 +309,22 @@ describe('serialization', () => {
     const json = JSON.parse(JSON.stringify(serializePuzzle(s)));
     const r = deserializePuzzle(json);
     expect(r.groups).toEqual(s.groups);
+    expect(r.tray).toEqual(s.tray);
     expect(r.elapsedMs).toBe(12345);
     r.pieces.forEach((p, i) => {
       expect(p.x).toBeCloseTo(s.pieces[i].x, 1);
       expect(p.locked).toBe(s.pieces[i].locked);
       expect(p.group).toBe(s.pieces[i].group);
+      expect(p.inTray).toBe(s.pieces[i].inTray);
     });
+  });
+
+  it('migrates version 1 saves (no tray)', () => {
+    const v2 = serializePuzzle(puzzle());
+    const { tray: _tray, ...rest } = v2;
+    const r = deserializePuzzle({ ...rest, version: 1 });
+    expect(r.tray).toEqual([]);
+    expect(r.pieces.every((p) => !p.inTray)).toBe(true);
   });
 
   it('rejects invalid or unknown data', () => {
@@ -240,5 +333,8 @@ describe('serialization', () => {
     const save = serializePuzzle(puzzle());
     save.pieces.pop();
     expect(() => deserializePuzzle(save)).toThrow();
+    const dup = serializePuzzle(puzzle());
+    dup.tray = [1, 1];
+    expect(() => deserializePuzzle(dup)).toThrow();
   });
 });

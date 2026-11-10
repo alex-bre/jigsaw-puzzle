@@ -58,7 +58,7 @@ export function findSnap(
   for (const p of pieces) {
     for (const nid of neighbourIds(state, p)) {
       const q = state.pieces[nid];
-      if (q.group === groupId) continue;
+      if (q.group === groupId || q.inTray) continue;
       const targetX = q.x + (p.col - q.col) * state.pieceWidth;
       const targetY = q.y + (p.row - q.row) * state.pieceHeight;
       consider('neighbour', targetX - p.x, targetY - p.y);
@@ -79,7 +79,7 @@ function settle(state: PuzzleState, groupId: number): { groupId: number; merged:
     for (const p of groupPieces(state, groupId)) {
       for (const nid of neighbourIds(state, p)) {
         const q = state.pieces[nid];
-        if (q.group === groupId) continue;
+        if (q.group === groupId || q.inTray) continue;
         const ex = q.x + (p.col - q.col) * state.pieceWidth - p.x;
         const ey = q.y + (p.row - q.row) * state.pieceHeight - p.y;
         if (Math.hypot(ex, ey) <= ALIGN_EPSILON) {

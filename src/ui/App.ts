@@ -3,6 +3,7 @@ import { createDemoImage } from '../game/demoImage';
 import { GameController } from '../game/GameController';
 import type { SourceImage } from '../game/render/PieceFactory';
 import { formatDuration, t } from '../i18n';
+import { SoundEffects } from '../platform/audio';
 import { h, icon, nextFrame } from './dom';
 import { loadPhoto } from './loadPhoto';
 
@@ -12,7 +13,7 @@ interface PictureChoice {
 }
 
 /**
- * Milestone-3 shell: a top bar, the game canvas, a "new puzzle" dialog and a completion dialog.
+ * Game shell: top bar, game canvas (board + tray), helper toolbar, "new puzzle" and completion dialogs.
  * The full menu structure (categories, saved games, settings) follows in milestone 5.
  */
 export class App {
@@ -25,6 +26,8 @@ export class App {
   private readonly sample: PictureChoice = { id: 'demo:landscape', image: createDemoImage() };
   private photo: PictureChoice | null = null;
   private picture: PictureChoice = this.sample;
+  private readonly sfx = new SoundEffects();
+  private readonly helpers = { ghost: false, edgesOnly: false };
 
   constructor(root: HTMLElement) {
     this.progressEl = h('div', { class: 'progress', role: 'status' });
@@ -46,6 +49,7 @@ export class App {
       ),
     );
     this.stage = h('main', { class: 'stage' });
+    const tools = this.buildToolbar();
     this.loadingEl = h(
       'div',
       { class: 'loading', hidden: true },
@@ -53,13 +57,64 @@ export class App {
     );
     this.newDialog = this.buildNewDialog();
     this.doneDialog = h('dialog', { class: 'dialog' });
-    root.append(topbar, this.stage, this.loadingEl, this.newDialog, this.doneDialog);
+    root.append(topbar, this.stage, tools, this.loadingEl, this.newDialog, this.doneDialog);
 
-    this.game = new GameController(this.stage, {
-      onProgress: (placed, total) => this.setProgress(placed, total),
-      onComplete: (ms, n) => this.showCompleted(ms, n),
-      onSnap: (locked) => navigator.vibrate?.(locked ? 25 : 12),
-    });
+    this.game = new GameController(
+      this.stage,
+      {
+        onProgress: (placed, total) => this.setProgress(placed, total),
+        onComplete: (ms, n) => {
+          this.sfx.complete();
+          this.showCompleted(ms, n);
+        },
+        onSnap: (locked) => {
+          this.sfx.snap(locked);
+          navigator.vibrate?.(locked ? 25 : 12);
+        },
+        onActivity: () => this.sfx.unlock(),
+      },
+      { noEdgePieces: t('noEdgePieces') },
+    );
+  }
+
+  /** Helper buttons: preview image, edge pieces only, sort the tray. */
+  private buildToolbar(): HTMLElement {
+    const toggle = (
+      key: keyof typeof this.helpers,
+      iconName: 'eye' | 'edges',
+      label: string,
+      hint: string,
+    ) => {
+      const btn = h(
+        'button',
+        { class: 'tool-btn', type: 'button', title: hint, 'aria-pressed': 'false' },
+        icon(iconName),
+        h('span', {}, label),
+      );
+      btn.addEventListener('click', () => {
+        this.helpers[key] = !this.helpers[key];
+        btn.setAttribute('aria-pressed', String(this.helpers[key]));
+        this.game.setHelperOptions(this.helpers);
+      });
+      return btn;
+    };
+    return h(
+      'nav',
+      { class: 'toolbar' },
+      toggle('ghost', 'eye', t('ghost'), t('ghostHint')),
+      toggle('edgesOnly', 'edges', t('edges'), t('edgesHint')),
+      h(
+        'button',
+        {
+          class: 'tool-btn',
+          type: 'button',
+          title: t('sortHint'),
+          onclick: () => this.game.sortTray(),
+        },
+        icon('sort'),
+        h('span', {}, t('sort')),
+      ),
+    );
   }
 
   async start(): Promise<void> {

@@ -1,0 +1,431 @@
+{
+  "categories": [
+    {
+      "id": "animals",
+      "title": {
+        "en": "Animals",
+        "de": "Tiere"
+      }
+    },
+    {
+      "id": "landscapes",
+      "title": {
+        "en": "Landscapes",
+        "de": "Landschaften"
+      }
+    },
+    {
+      "id": "flowers",
+      "title": {
+        "en": "Flowers",
+        "de": "Blumen"
+      }
+    },
+    {
+      "id": "cities",
+      "title": {
+        "en": "Cities & castles",
+        "de": "Städte & Schlösser"
+      }
+    },
+    {
+      "id": "art",
+      "title": {
+        "en": "Art",
+        "de": "Kunst"
+      }
+    }
+  ],
+  "images": [
+    {
+      "id": "peacock",
+      "category": "animals",
+      "title": {
+        "en": "Peacock",
+        "de": "Pfau"
+      },
+      "download": "https://upload.wikimedia.org/wikipedia/commons/6/6f/Pavo_Real_Venezolano.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Pavo_Real_Venezolano.jpg",
+      "author": "Wilfredor (Wikimedia Commons)",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "id": "butterfly",
+      "category": "animals",
+      "title": {
+        "en": "Butterfly",
+        "de": "Schmetterling"
+      },
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/20/Agraulis_vanillae_at_Isla_Margarita.jpg/1920px-Agraulis_vanillae_at_Isla_Margarita.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Agraulis_vanillae_at_Isla_Margarita.jpg",
+      "author": "Wilfredor (Wikimedia Commons)",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "id": "capybara",
+      "category": "animals",
+      "title": {
+        "en": "Capybara",
+        "de": "Wasserschwein"
+      },
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/34/Hydrochoeris_hydrochaeris_in_Brazil_in_Petr%C3%B3polis%2C_Rio_de_Janeiro%2C_Brazil_09.jpg/1920px-Hydrochoeris_hydrochaeris_in_Brazil_in_Petr%C3%B3polis%2C_Rio_de_Janeiro%2C_Brazil_09.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Hydrochoeris_hydrochaeris_in_Brazil_in_Petr%C3%B3polis,_Rio_de_Janeiro,_Brazil_09.jpg",
+      "author": "Wilfredor (Wikimedia Commons)",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "id": "flamingo",
+      "category": "animals",
+      "title": {
+        "en": "Flamingo",
+        "de": "Flamingo"
+      },
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f9/Phoenicopterus_ruber_in_S%C3%A3o_Paulo_Zoo.jpg/1920px-Phoenicopterus_ruber_in_S%C3%A3o_Paulo_Zoo.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Phoenicopterus_ruber_in_S%C3%A3o_Paulo_Zoo.jpg",
+      "author": "Wilfredor (Wikimedia Commons)",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "id": "lynx",
+      "category": "animals",
+      "title": {
+        "en": "Lynx",
+        "de": "Luchs"
+      },
+      "download": "https://upload.wikimedia.org/wikipedia/commons/d/d8/Lynx_lynx-4.JPG",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Lynx_lynx-4.JPG",
+      "author": "David Castor (Wikimedia Commons)",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Lynx_lynx-4.JPG"
+    },
+    {
+      "id": "kingfisher",
+      "category": "animals",
+      "title": {
+        "en": "Kingfisher",
+        "de": "Eisvogel"
+      },
+      "download": "https://upload.wikimedia.org/wikipedia/commons/5/59/Common_kingfisher_in_Japan%2C_January_2019_-_%E8%B0%B7%E5%B4%8E7303.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Common_kingfisher_in_Japan,_January_2019_-_%E8%B0%B7%E5%B4%8E7303.jpg",
+      "author": "谷崎かおる (Wikimedia Commons)",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Common_kingfisher_in_Japan,_January_2019_-_%E8%B0%B7%E5%B4%8E7303.jpg"
+    },
+    {
+      "id": "marmolada",
+      "category": "landscapes",
+      "title": {
+        "en": "Marmolada, Dolomites",
+        "de": "Marmolata, Dolomiten"
+      },
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/63/Marmolada%2C_Italy.jpg/1920px-Marmolada%2C_Italy.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Marmolada,_Italy.jpg",
+      "author": "Marco Bonomo (Wikimedia Commons)",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "id": "lofoten",
+      "category": "landscapes",
+      "title": {
+        "en": "Northern lights, Lofoten",
+        "de": "Polarlicht über den Lofoten"
+      },
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/86/Lofoten%2C_Norway_%28Unsplash%29.jpg/1920px-Lofoten%2C_Norway_%28Unsplash%29.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Lofoten,_Norway_(Unsplash).jpg",
+      "author": "Johannes Groll followhansi (Wikimedia Commons)",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "id": "crete",
+      "category": "landscapes",
+      "title": {
+        "en": "Messara plain, Crete",
+        "de": "Messara-Ebene, Kreta"
+      },
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6d/Mount_Ida_chain_Messara_plain_from_Phaistos_Crete_Greece.jpg/1920px-Mount_Ida_chain_Messara_plain_from_Phaistos_Crete_Greece.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Mount_Ida_chain_Messara_plain_from_Phaistos_Crete_Greece.jpg",
+      "author": "Jebulon (Wikimedia Commons)",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "id": "fishing-boats",
+      "category": "landscapes",
+      "title": {
+        "en": "Fishing boats on the beach",
+        "de": "Fischerboote am Strand"
+      },
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6b/Fishing_boats%2C_morning%2C_Beach%2C_Rincon_de_la_Victoria%2C_Andalusia%2C_Spain.jpg/1920px-Fishing_boats%2C_morning%2C_Beach%2C_Rincon_de_la_Victoria%2C_Andalusia%2C_Spain.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Fishing_boats,_morning,_Beach,_Rincon_de_la_Victoria,_Andalusia,_Spain.jpg",
+      "author": "Jebulon (Wikimedia Commons)",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "id": "boathouse",
+      "category": "landscapes",
+      "title": {
+        "en": "Red boathouse, Sweden",
+        "de": "Rotes Bootshaus, Schweden"
+      },
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/Fishing_hut%2C_jetties_and_boats_in_Loddebo.jpg/1920px-Fishing_hut%2C_jetties_and_boats_in_Loddebo.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Fishing_hut,_jetties_and_boats_in_Loddebo.jpg",
+      "author": "W.carter (Wikimedia Commons)",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "id": "karystos",
+      "category": "landscapes",
+      "title": {
+        "en": "Castle harbour, Karystos",
+        "de": "Burghafen von Karystos"
+      },
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/36/Bourtzi_castle_harbour_Karystos_Euboea_Greece.jpg/1920px-Bourtzi_castle_harbour_Karystos_Euboea_Greece.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Bourtzi_castle_harbour_Karystos_Euboea_Greece.jpg",
+      "author": "Jebulon (Wikimedia Commons)",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "id": "budapest",
+      "category": "cities",
+      "title": {
+        "en": "Chain Bridge, Budapest",
+        "de": "Kettenbrücke, Budapest"
+      },
+      "download": "https://upload.wikimedia.org/wikipedia/commons/f/fd/Sz%C3%A9chenyi_Chain_Bridge_in_Budapest_at_night.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Sz%C3%A9chenyi_Chain_Bridge_in_Budapest_at_night.jpg",
+      "author": "Wilfredor (Wikimedia Commons)",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "id": "place-du-tertre",
+      "category": "cities",
+      "title": {
+        "en": "Place du Tertre, Paris",
+        "de": "Place du Tertre, Paris"
+      },
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/07/Restaurants%2C_Place_du_Tertre%2C_Paris_30_September_2019.jpg/1920px-Restaurants%2C_Place_du_Tertre%2C_Paris_30_September_2019.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Restaurants,_Place_du_Tertre,_Paris_30_September_2019.jpg",
+      "author": "Pierre Blaché from Paris, France (Wikimedia Commons)",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "id": "musee-orsay",
+      "category": "cities",
+      "title": {
+        "en": "Pont Royal and Musée d'Orsay",
+        "de": "Pont Royal und Musée d'Orsay"
+      },
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9c/Pont_Royal_and_Mus%C3%A9e_d%27Orsay%2C_Paris_10_July_2020.jpg/1920px-Pont_Royal_and_Mus%C3%A9e_d%27Orsay%2C_Paris_10_July_2020.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Pont_Royal_and_Mus%C3%A9e_d%27Orsay,_Paris_10_July_2020.jpg",
+      "author": "Pierre Blaché from Paris, France (Wikimedia Commons)",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "id": "neuschwanstein",
+      "category": "cities",
+      "title": {
+        "en": "Neuschwanstein Castle",
+        "de": "Schloss Neuschwanstein"
+      },
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/Neuschwanstein_Castle_2024-02.jpg/1920px-Neuschwanstein_Castle_2024-02.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Neuschwanstein_Castle_2024-02.jpg",
+      "author": "Wilfredor (Wikimedia Commons)",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "id": "aegina",
+      "category": "cities",
+      "title": {
+        "en": "Aegina harbour at sunset",
+        "de": "Hafen von Ägina am Abend"
+      },
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9d/Aegina_sunset.jpg/1920px-Aegina_sunset.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Aegina_sunset.jpg",
+      "author": "Jebulon (Wikimedia Commons)",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "id": "mespelbrunn",
+      "category": "cities",
+      "title": {
+        "en": "Mespelbrunn Castle",
+        "de": "Wasserschloss Mespelbrunn"
+      },
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1c/Wasserschloss_Mespelbrunn%2C_6.jpg/1920px-Wasserschloss_Mespelbrunn%2C_6.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Wasserschloss_Mespelbrunn,_6.jpg",
+      "author": "Rainer Lippert (Wikimedia Commons)",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Wasserschloss_Mespelbrunn,_6.jpg"
+    },
+    {
+      "id": "apple-blossom",
+      "category": "flowers",
+      "title": {
+        "en": "Apple blossom",
+        "de": "Apfelblüte"
+      },
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/86/Apple-tree_blossoms_2017_G3.jpg/1920px-Apple-tree_blossoms_2017_G3.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Apple-tree_blossoms_2017_G3.jpg",
+      "author": "George Chernilevsky (Wikimedia Commons)",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Apple-tree_blossoms_2017_G3.jpg"
+    },
+    {
+      "id": "daylilies",
+      "category": "flowers",
+      "title": {
+        "en": "Daylilies",
+        "de": "Taglilien"
+      },
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c6/Hemerocallis_fulva_2016_G1.jpg/1920px-Hemerocallis_fulva_2016_G1.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Hemerocallis_fulva_2016_G1.jpg",
+      "author": "George Chernilevsky (Wikimedia Commons)",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Hemerocallis_fulva_2016_G1.jpg"
+    },
+    {
+      "id": "bindweed",
+      "category": "flowers",
+      "title": {
+        "en": "Field bindweed",
+        "de": "Ackerwinde"
+      },
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a0/Field_Bindweed_in_Brodalen.jpg/1920px-Field_Bindweed_in_Brodalen.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Field_Bindweed_in_Brodalen.jpg",
+      "author": "W.carter (Wikimedia Commons)",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "id": "lupins",
+      "category": "flowers",
+      "title": {
+        "en": "Lupins",
+        "de": "Lupinen"
+      },
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/aa/Lupinus_polyphyllus_UA_2015_G5.jpg/1920px-Lupinus_polyphyllus_UA_2015_G5.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Lupinus_polyphyllus_UA_2015_G5.jpg",
+      "author": "George Chernilevsky (Wikimedia Commons)",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Lupinus_polyphyllus_UA_2015_G5.jpg"
+    },
+    {
+      "id": "lotus",
+      "category": "flowers",
+      "title": {
+        "en": "Lotus flower",
+        "de": "Lotusblüte"
+      },
+      "download": "https://upload.wikimedia.org/wikipedia/commons/f/f5/Lotus_flower_%28978659%29.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Lotus_flower_(978659).jpg",
+      "author": "Hong Zhang (jennyzhh2008) (Wikimedia Commons)",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "id": "sunflower",
+      "category": "flowers",
+      "title": {
+        "en": "Sunflower",
+        "de": "Sonnenblume"
+      },
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c0/Sunflower_head_2015_G1.jpg/1920px-Sunflower_head_2015_G1.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Sunflower_head_2015_G1.jpg",
+      "author": "George Chernilevsky (Wikimedia Commons)",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Sunflower_head_2015_G1.jpg"
+    },
+    {
+      "id": "wheat-field",
+      "category": "art",
+      "title": {
+        "en": "Van Gogh – Wheat Field with Cypresses",
+        "de": "Van Gogh – Weizenfeld mit Zypressen"
+      },
+      "download": "https://images.metmuseum.org/CRDImages/ep/original/DP-42549-001.jpg",
+      "sourcePage": "https://www.metmuseum.org/art/collection/search/436535",
+      "author": "Vincent van Gogh, 1889 (The Metropolitan Museum of Art)",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "id": "great-wave",
+      "category": "art",
+      "title": {
+        "en": "Hokusai – The Great Wave",
+        "de": "Hokusai – Die große Welle"
+      },
+      "download": "https://images.metmuseum.org/CRDImages/as/original/DP130155.jpg",
+      "sourcePage": "https://www.metmuseum.org/art/collection/search/45434",
+      "author": "Katsushika Hokusai, ca. 1830–32 (The Metropolitan Museum of Art)",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "id": "irises",
+      "category": "art",
+      "title": {
+        "en": "Van Gogh – Irises",
+        "de": "Van Gogh – Schwertlilien"
+      },
+      "download": "https://images.metmuseum.org/CRDImages/ep/original/DP346474.jpg",
+      "sourcePage": "https://www.metmuseum.org/art/collection/search/436528",
+      "author": "Vincent van Gogh, 1890 (The Metropolitan Museum of Art)",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "id": "harvesters",
+      "category": "art",
+      "title": {
+        "en": "Bruegel – The Harvesters",
+        "de": "Bruegel – Die Kornernte"
+      },
+      "download": "https://images.metmuseum.org/CRDImages/ep/original/DP119115.jpg",
+      "sourcePage": "https://www.metmuseum.org/art/collection/search/435809",
+      "author": "Pieter Bruegel the Elder, 1565 (The Metropolitan Museum of Art)",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "id": "monet-family",
+      "category": "art",
+      "title": {
+        "en": "Manet – The Monet Family in Their Garden",
+        "de": "Manet – Familie Monet im Garten"
+      },
+      "download": "https://images.metmuseum.org/CRDImages/ep/original/DP-25465-001.jpg",
+      "sourcePage": "https://www.metmuseum.org/art/collection/search/436965",
+      "author": "Edouard Manet, 1874 (The Metropolitan Museum of Art)",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "id": "cezanne-apples",
+      "category": "art",
+      "title": {
+        "en": "Cézanne – Still Life with Apples",
+        "de": "Cézanne – Stillleben mit Äpfeln"
+      },
+      "download": "https://images.metmuseum.org/CRDImages/ep/original/DT47.jpg",
+      "sourcePage": "https://www.metmuseum.org/art/collection/search/435882",
+      "author": "Paul Cézanne, ca. 1890 (The Metropolitan Museum of Art)",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    }
+  ]
+}

@@ -78,7 +78,7 @@ export class GameController {
   constructor(
     private readonly host: HTMLElement,
     private readonly events: GameEvents,
-    private readonly labels: GameLabels,
+    private labels: GameLabels,
   ) {}
 
   async init(): Promise<void> {
@@ -175,12 +175,29 @@ export class GameController {
     this.app.destroy(true);
   }
 
+  get pieceCount(): number {
+    return this.state?.pieces.length ?? 0;
+  }
+
   /** Zooms to show the board and every piece lying around it. */
   fitView(): void {
     if (this.state) this.camera.fitRect(contentBounds(this.state), 16);
   }
 
   // --- Helpers --------------------------------------------------------------
+
+  /** Board background colour (CSS colour string). */
+  setBackground(color: string): void {
+    this.app.renderer.background.color = color;
+    this.invalidate();
+  }
+
+  /** Texts drawn inside the canvas, e.g. after a language change. */
+  setLabels(labels: GameLabels): void {
+    this.labels = labels;
+    this.refreshTray();
+    this.invalidate();
+  }
 
   setHelperOptions(options: Partial<HelperOptions>): void {
     const edgesChanged =

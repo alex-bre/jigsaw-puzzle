@@ -1,5 +1,7 @@
 import { catalog, imagesIn, thumbUrl } from '../../content/catalog';
 import { currentLanguage, t } from '../../i18n';
+import { isNative } from '../../platform/native';
+import { pickPhoto, type PhotoSource } from '../../platform/photos';
 import { h, icon } from '../dom';
 import { screen, screenHeader, statusBadge, type PictureRef, type ScreenContext } from './context';
 
@@ -12,17 +14,40 @@ export function picturesScreen(ctx: ScreenContext): HTMLElement {
     class: 'visually-hidden',
     tabindex: -1,
   });
-  fileInput.addEventListener('change', async () => {
-    const file = fileInput.files?.[0];
-    fileInput.value = '';
-    if (!file) return;
+  const add = async (image: Blob | null) => {
+    if (!image) return; // cancelled
     try {
-      const photo = await ctx.addPhoto(file);
+      const photo = await ctx.addPhoto(image);
       ctx.go({ name: 'setup', imageId: photo.id });
-    } catch {
+    } catch (err) {
+      console.warn('Adding the photo failed', err);
       alert(t('photoError'));
     }
+  };
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files?.[0] ?? null;
+    fileInput.value = '';
+    void add(file);
   });
+  const fromDevice = (source: PhotoSource) =>
+    pickPhoto(source).then(add, (err) => {
+      console.warn('Choosing a photo failed', err);
+      alert(t('photoError'));
+    });
+  const addCard = (iconName: 'photo' | 'camera', label: string, onclick: () => void) =>
+    h(
+      'button',
+      { class: 'card card-add', type: 'button', onclick },
+      h('span', { class: 'card-img card-img-icon' }, icon(iconName)),
+      h('span', { class: 'card-label' }, h('strong', {}, label)),
+    );
+  // In the app: the system photo picker and the camera. In a browser: a file input.
+  const addCards = isNative()
+    ? [
+        addCard('photo', t('chooseMyPhoto'), () => void fromDevice('gallery')),
+        addCard('camera', t('takePhoto'), () => void fromDevice('camera')),
+      ]
+    : [addCard('photo', t('chooseMyPhoto'), () => fileInput.click())];
 
   const categories = catalog.categories.map((cat) => {
     const imgs = imagesIn(cat.id);
@@ -52,17 +77,7 @@ export function picturesScreen(ctx: ScreenContext): HTMLElement {
     screenHeader(ctx, t('choosePicture')),
     h('div', { class: 'card-grid' }, ...categories),
     h('h2', { class: 'section-title' }, t('myPhotos')),
-    h(
-      'div',
-      { class: 'card-grid' },
-      h(
-        'button',
-        { class: 'card card-add', type: 'button', onclick: () => fileInput.click() },
-        h('span', { class: 'card-img card-img-icon' }, icon('photo')),
-        h('span', { class: 'card-label' }, h('strong', {}, t('chooseMyPhoto'))),
-      ),
-      ...ctx.photos.map((p) => pictureCard(ctx, p)),
-    ),
+    h('div', { class: 'card-grid' }, ...addCards, ...ctx.photos.map((p) => pictureCard(ctx, p))),
     fileInput,
   );
 }

@@ -31,7 +31,7 @@ export interface ScreenContext {
   updateSettings(patch: Partial<Settings>): void;
   picture(id: string): PictureRef | undefined;
   photos: PictureRef[];
-  addPhoto(file: File): Promise<PictureRef>;
+  addPhoto(image: Blob): Promise<PictureRef>;
   deletePhoto(id: string): Promise<void>;
   /** Puzzles in progress, most recently played first. */
   saves: SaveMeta[];

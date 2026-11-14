@@ -1,11 +1,12 @@
 import { createStore, del, get, set, type UseStore } from 'idb-keyval';
+import { isNative } from './native';
 
 /**
  * Small async key-value store for everything the app keeps on the device. Values are
  * structured-clonable data (plain objects, arrays, strings, numbers) or Blobs.
  *
- * Web: IndexedDB. Android (milestone 7) gets its own implementation of this interface
- * (Capacitor Preferences / Filesystem), so nothing else in the app has to change.
+ * Web: IndexedDB. Android: files in the app's private data folder (see FileStorage), which
+ * the system never evicts and which survive app updates.
  */
 export interface AppStorage {
   get<T>(key: string): Promise<T | undefined>;
@@ -50,8 +51,124 @@ export class MemoryStorage implements AppStorage {
   }
 }
 
+/** Minimal file access FileStorage needs. Binary contents are passed as base64 strings. */
+export interface FileBackend {
+  /** File contents, or undefined if the file does not exist. */
+  read(path: string, binary: boolean): Promise<string | undefined>;
+  write(path: string, data: string, binary: boolean): Promise<void>;
+  /** Deletes a file; does nothing if it does not exist. */
+  remove(path: string): Promise<void>;
+  /** Moves a file, replacing the target if it exists. */
+  rename(from: string, to: string): Promise<void>;
+}
+
+/** Marks a JSON file whose value is a Blob stored next to it in a `.bin` file. */
+const BLOB_MARKER = '__blob__';
+
+/**
+ * Key-value store on top of plain files: one `<key>.json` file per key, Blobs as an extra
+ * `<key>.bin` file. Every file is written to a temporary name first and then renamed, so a
+ * crash or a killed app never leaves a half-written save behind.
+ */
+export class FileStorage implements AppStorage {
+  constructor(
+    private readonly files: FileBackend,
+    private readonly dir = 'store',
+  ) {}
+
+  async get<T>(key: string): Promise<T | undefined> {
+    const text = await this.readSafe(this.path(key, 'json'), false);
+    if (text === undefined) return undefined;
+    let value: unknown;
+    try {
+      value = JSON.parse(text);
+    } catch {
+      console.warn(`Stored value "${key}" is damaged and was ignored`);
+      return undefined;
+    }
+    if (isBlobRef(value)) {
+      const data = await this.readSafe(this.path(key, 'bin'), true);
+      if (data === undefined) return undefined;
+      return base64ToBlob(data, value[BLOB_MARKER]) as T;
+    }
+    return value as T;
+  }
+
+  async set(key: string, value: unknown): Promise<void> {
+    if (value === undefined) return this.remove(key);
+    if (value instanceof Blob) {
+      // Image data first, then the small reference: a crash in between keeps the old value.
+      await this.writeSafe(this.path(key, 'bin'), await blobToBase64(value), true);
+      await this.writeSafe(
+        this.path(key, 'json'),
+        JSON.stringify({ [BLOB_MARKER]: value.type }),
+        false,
+      );
+      return;
+    }
+    await this.writeSafe(this.path(key, 'json'), JSON.stringify(value), false);
+    await this.files.remove(this.path(key, 'bin')); // in case it used to be a Blob
+  }
+
+  async remove(key: string): Promise<void> {
+    await this.files.remove(this.path(key, 'json'));
+    await this.files.remove(this.path(key, 'json') + '.tmp');
+    await this.files.remove(this.path(key, 'bin'));
+    await this.files.remove(this.path(key, 'bin') + '.tmp');
+  }
+
+  private path(key: string, ext: 'json' | 'bin'): string {
+    return `${this.dir}/${fileName(key)}.${ext}`;
+  }
+
+  private async writeSafe(path: string, data: string, binary: boolean): Promise<void> {
+    const tmp = path + '.tmp';
+    await this.files.write(tmp, data, binary);
+    await this.files.rename(tmp, path);
+  }
+
+  /** Reads a file; falls back to a finished temp file if the app died right before the rename. */
+  private async readSafe(path: string, binary: boolean): Promise<string | undefined> {
+    return (await this.files.read(path, binary)) ?? (await this.files.read(path + '.tmp', binary));
+  }
+}
+
+/** Maps any key to a safe, unique file name: letters, digits, '-' and '.' stay, the rest is escaped. */
+export function fileName(key: string): string {
+  return key.replace(/[^A-Za-z0-9.-]/g, (c) => `_${c.charCodeAt(0).toString(16).padStart(2, '0')}`);
+}
+
+function isBlobRef(value: unknown): value is { [BLOB_MARKER]: string } {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as Record<string, unknown>)[BLOB_MARKER] === 'string'
+  );
+}
+
+async function blobToBase64(blob: Blob): Promise<string> {
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  let binary = '';
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary);
+}
+
+function base64ToBlob(data: string, type: string): Blob {
+  const binary = atob(data);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new Blob([bytes], { type });
+}
+
 /** The best storage available on this device. */
 export async function createStorage(): Promise<AppStorage> {
+  if (isNative()) {
+    const { capacitorFiles } = await import('./nativeFiles');
+    return new FileStorage(capacitorFiles);
+  }
   try {
     const storage = new IndexedDbStorage();
     await storage.get('__probe__'); // fails early in browsers that block IndexedDB

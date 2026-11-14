@@ -1,5 +1,6 @@
 import './styles.css';
 import { Repository } from './data/repository';
+import { appReady } from './platform/device';
 import { createStorage } from './platform/storage';
 import { App } from './ui/App';
 
@@ -10,4 +11,7 @@ async function main(): Promise<void> {
   await app.start();
 }
 
-void main();
+main().catch((err) => {
+  console.error('Start failed', err);
+  appReady(); // never leave the player stuck on the splash screen
+});

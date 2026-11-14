@@ -4,6 +4,7 @@ import { GameController } from '../game/GameController';
 import type { SourceImage } from '../game/render/PieceFactory';
 import { currentLanguage, detectLanguage, formatDuration, setLanguage, t } from '../i18n';
 import { SoundEffects } from '../platform/audio';
+import { appReady, exitApp, onBackButton, onPause, vibrate } from '../platform/device';
 import { BACKGROUNDS, type Settings } from '../settings';
 import { h, icon, nextFrame } from './dom';
 import { loadPhoto } from './loadPhoto';
@@ -65,7 +66,7 @@ export class App {
         onComplete: (ms, n) => void this.onComplete(ms, n),
         onSnap: (locked) => {
           this.sfx.snap(locked);
-          if (this.settings.vibration) navigator.vibrate?.(locked ? 25 : 12);
+          if (this.settings.vibration) vibrate(locked);
         },
         onActivity: () => this.sfx.unlock(),
         onStateChange: () => this.scheduleSave(),
@@ -96,8 +97,11 @@ export class App {
       if (document.hidden) void this.saveNow();
     });
     window.addEventListener('pagehide', () => void this.saveNow());
+    onPause(() => void this.saveNow());
+    onBackButton(() => this.onBackButton());
     onRouteChange((route) => this.render(route));
     this.render(parseRoute(location.hash));
+    appReady();
     if (import.meta.env.DEV) {
       // Debug handle for manual testing / automated browser checks. Stripped from production builds.
       Object.assign(window, { __game: this.game, __app: this });
@@ -166,10 +170,29 @@ export class App {
     };
   }
 
-  /** Goes to the parent of the current screen (also used for the Android back button later). */
+  /** Goes to the parent of the current screen. */
   back(): void {
     const parent = parentRoute(this.route, this.setupParent);
     if (parent) navigate(parent);
+  }
+
+  /**
+   * Android back button: close the open dialog, else leave the puzzle (it is saved on the
+   * way out), else go up one screen, and on the home screen leave the app.
+   */
+  private onBackButton(): void {
+    if (this.starting) return; // a puzzle is being prepared
+    const dialog = [this.confirmDialog, this.doneDialog].find((d) => d.open);
+    if (dialog) {
+      dialog.close(); // a confirmation closed this way counts as "no"
+      return;
+    }
+    if (this.route.name === 'home') {
+      void this.saveNow().finally(exitApp);
+      return;
+    }
+    if (this.route.name === 'play') navigate({ name: 'home' });
+    else this.back();
   }
 
   // --- Pictures -------------------------------------------------------------
@@ -198,7 +221,7 @@ export class App {
     };
   }
 
-  private async addPhoto(file: File): Promise<PictureRef> {
+  private async addPhoto(file: Blob): Promise<PictureRef> {
     const canvas = await loadPhoto(file);
     const blob = await new Promise<Blob>((resolve, reject) =>
       canvas.toBlob(

@@ -110,7 +110,7 @@ tests/                    Vitest
 - Saves are debounced to at most every 2 seconds, and also happen on `visibilitychange` / app pause.
 - **Storage interface** with two implementations:
   - Web: IndexedDB (via `idb-keyval`).
-  - Android: `@capacitor/preferences` for settings and the stats index, and `@capacitor/filesystem` for save files and user photos. User photos are re-encoded to at most 2048 px WebP/JPEG before storing.
+  - Android: `@capacitor/filesystem` for everything (settings, index, save files and user photos), written atomically. User photos are re-encoded to at most 2048 px JPEG before storing.
 - A schema `version` field plus a migration function, so updates never break existing saves.
 
 ### 3.5 Images and licensing
@@ -172,6 +172,7 @@ Storage abstraction, auto-save/resume, multiple saves, "My puzzles", completed b
 **M7 – Android via Capacitor (1–2 days)**
 Capacitor setup, Android project, plugins (Preferences, Filesystem, Camera, Haptics, App, StatusBar, SplashScreen), Capacitor storage implementation, back button, app icon and splash, orientation config, release build signing.
 ✅ Installs from an APK/AAB, works in airplane mode, and saves survive restarts and app updates.
+_Implementation notes:_ everything (settings and stats included) is stored as files through `@capacitor/filesystem` with write-to-temp-then-rename. `@capacitor/preferences` was dropped because it writes asynchronously (`apply()`), so the last write can be lost if the app is killed right after pausing. `@capacitor/status-bar` was replaced by Capacitor 8's built-in `SystemBars` (Android 15+ is always edge-to-edge). Photos use the system photo picker plus a separate "Take a photo" button instead of a source prompt, so no camera or storage permission is needed.
 
 **M8 – Polish and testing with real users (ongoing)**
 Test with older users (font size, contrast, tolerance tuning), low-end device profiling, completion celebration, empty states, Play Store listing.
@@ -180,14 +181,14 @@ Test with older users (font size, contrast, tolerance tuning), low-end device pr
 
 ## 5. Dependencies
 
-| Package                                                                                                 | Purpose                      |
-| ------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| `pixi.js` (v8)                                                                                          | Rendering                    |
-| `idb-keyval`                                                                                            | IndexedDB storage on the web |
-| `@capacitor/core`, `/cli`, `/android`                                                                   | Native packaging             |
-| `@capacitor/preferences`, `/filesystem`, `/camera`, `/haptics`, `/app`, `/status-bar`, `/splash-screen` | Native features              |
-| `vitest`                                                                                                | Unit tests                   |
-| `sharp`, `tsx` (dev)                                                                                    | Image preparation script     |
+| Package                                                                                            | Purpose                      |
+| -------------------------------------------------------------------------------------------------- | ---------------------------- |
+| `pixi.js` (v8)                                                                                     | Rendering                    |
+| `idb-keyval`                                                                                       | IndexedDB storage on the web |
+| `@capacitor/core`, `/cli`, `/android`                                                              | Native packaging             |
+| `@capacitor/filesystem`, `/camera`, `/haptics`, `/app`, `/splash-screen` (+ built-in `SystemBars`) | Native features              |
+| `vitest`                                                                                           | Unit tests                   |
+| `sharp`, `tsx` (dev)                                                                               | Image preparation script     |
 
 No analytics, no ad SDKs, no network permission needed beyond Capacitor's defaults. We can also remove `INTERNET` from the manifest.
 
@@ -198,5 +199,5 @@ No analytics, no ad SDKs, no network permission needed beyond Capacitor's defaul
 | Memory on low-end devices with 240 pieces | Atlas packing, capped image resolution, release textures on exit, test early in M4             |
 | Tray scroll vs. drag conflicts            | Direction-based gesture detection, tuned with real users                                       |
 | Image licensing                           | Use only CC0/clearly permitted images and track each one in `credits.json`                     |
-| WebView storage eviction                  | Use the Capacitor Filesystem/Preferences on Android, not WebView IndexedDB                     |
+| WebView storage eviction                  | Use the Capacitor Filesystem on Android, not WebView IndexedDB                                 |
 | Small screens + elderly users             | Generous tolerance, large tray pieces, zoom limits, a "fit view" button that is always visible |

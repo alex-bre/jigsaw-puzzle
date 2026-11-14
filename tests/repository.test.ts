@@ -21,7 +21,6 @@ function save(id: string) {
 
 afterEach(() => {
   vi.useRealTimers();
-  vi.unstubAllGlobals();
 });
 
 describe('repository: puzzles in progress', () => {
@@ -101,20 +100,5 @@ describe('repository: settings', () => {
     const s = { ...DEFAULT_SETTINGS, language: 'de' as const, sound: false };
     await repo.saveSettings(s);
     expect(await repo.loadSettings()).toEqual(s);
-  });
-
-  it('migrates settings from the old localStorage location once', async () => {
-    const legacy = new Map([
-      ['jigsaw.settings.v1', JSON.stringify({ language: 'en', background: 'night' })],
-    ]);
-    vi.stubGlobal('localStorage', {
-      getItem: (k: string) => legacy.get(k) ?? null,
-      removeItem: (k: string) => legacy.delete(k),
-    });
-    const store = new MemoryStorage();
-    const repo = new Repository(store);
-    expect(await repo.loadSettings()).toMatchObject({ language: 'en', background: 'night' });
-    expect(legacy.size).toBe(0);
-    expect(await store.get('settings')).toMatchObject({ language: 'en' });
   });
 });

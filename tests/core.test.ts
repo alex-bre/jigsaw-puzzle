@@ -319,17 +319,11 @@ describe('serialization', () => {
     });
   });
 
-  it('migrates version 1 saves (no tray)', () => {
-    const v2 = serializePuzzle(puzzle());
-    const { tray: _tray, ...rest } = v2;
-    const r = deserializePuzzle({ ...rest, version: 1 });
-    expect(r.tray).toEqual([]);
-    expect(r.pieces.every((p) => !p.inTray)).toBe(true);
-  });
-
   it('rejects invalid or unknown data', () => {
     expect(() => deserializePuzzle(null)).toThrow();
     expect(() => deserializePuzzle({ version: 99 })).toThrow();
+    const { tray: _tray, ...noTray } = serializePuzzle(puzzle());
+    expect(() => deserializePuzzle(noTray)).toThrow();
     const save = serializePuzzle(puzzle());
     save.pieces.pop();
     expect(() => deserializePuzzle(save)).toThrow();

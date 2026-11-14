@@ -2,8 +2,6 @@
 
 A calm, senior-friendly jigsaw puzzle game. PixiJS v8 + TypeScript + Vite, packaged for Android with Capacitor 8. Fully offline, no ads.
 
-See [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) for the full plan and milestones.
-
 ## Development
 
 ```bash
@@ -35,7 +33,7 @@ Needs **Android Studio** (it brings the Android SDK and a JDK 21). The `android/
 npm run android:sync    # build the web app and copy it into android/
 npm run android:open    # open the project in Android Studio (run/debug from there)
 npm run android:run     # build, sync and install on a connected phone / emulator
-npm run android:dev     # live reload from the dev server (debug build, phone on the same Wi-Fi)
+npm run android:dev     # live reload: start `npm run dev` first, then this (phone on the same Wi-Fi)
 npm run android:apk     # release APK  → android/app/build/outputs/apk/release/app-release.apk
 npm run android:bundle  # release AAB for the Play Store → android/app/build/outputs/bundle/release/
 npm run android:icons   # redraw app icon + splash (scripts/app-icons.ts) and regenerate all sizes

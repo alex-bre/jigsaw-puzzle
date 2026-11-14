@@ -2,7 +2,8 @@ import type { PuzzleState } from './model';
 
 export const SAVE_VERSION = 2;
 
-interface PuzzleSaveBase {
+export interface PuzzleSave {
+  version: typeof SAVE_VERSION;
   imageId: string;
   imageWidth: number;
   imageHeight: number;
@@ -13,19 +14,9 @@ interface PuzzleSaveBase {
   elapsedMs: number;
   /** Per piece (in id order): [x, y, groupId, locked ? 1 : 0]. */
   pieces: [number, number, number, 0 | 1][];
-}
-
-export interface PuzzleSaveV1 extends PuzzleSaveBase {
-  version: 1;
-}
-
-export interface PuzzleSaveV2 extends PuzzleSaveBase {
-  version: 2;
   /** Ids of the pieces in the tray, in tray order. */
   tray: number[];
 }
-
-export type PuzzleSave = PuzzleSaveV2;
 
 export function serializePuzzle(state: PuzzleState): PuzzleSave {
   return {
@@ -46,12 +37,14 @@ function round2(v: number): number {
   return Math.round(v * 100) / 100;
 }
 
-/** Upgrades older save formats to the current one. Throws on unknown/invalid data. */
+/**
+ * Checks the save format version. When the format changes, raise SAVE_VERSION and upgrade
+ * older saves here, so app updates never break puzzles in progress. Throws on unknown data.
+ */
 export function migrateSave(data: unknown): PuzzleSave {
   if (!data || typeof data !== 'object') throw new Error('Invalid save: not an object');
   const version = (data as { version?: unknown }).version;
-  if (version === 1) return { ...(data as PuzzleSaveV1), version: 2, tray: [] };
-  if (version === 2) return data as PuzzleSaveV2;
+  if (version === SAVE_VERSION) return data as PuzzleSave;
   throw new Error(`Unsupported save version: ${String(version)}`);
 }
 
@@ -61,7 +54,8 @@ export function deserializePuzzle(data: unknown): PuzzleState {
   if (!Array.isArray(save.pieces) || save.pieces.length !== count) {
     throw new Error('Invalid save: piece count mismatch');
   }
-  const tray = Array.isArray(save.tray) ? save.tray : [];
+  const tray = save.tray;
+  if (!Array.isArray(tray)) throw new Error('Invalid save: missing tray');
   const inTray = new Set(tray);
   if (
     inTray.size !== tray.length ||

@@ -16,7 +16,7 @@
     "android:sync": "npm run build && cap sync android",
     "android:open": "cap open android",
     "android:run": "npm run android:sync && cap run android",
-    "android:dev": "cap run android --live-reload --external",
+    "android:dev": "cap run android --live-reload --port 5173",
     "android:apk": "node scripts/android-build.ts apk",
     "android:bundle": "node scripts/android-build.ts bundle",
     "android:icons": "node scripts/app-icons.ts && capacitor-assets generate --android"

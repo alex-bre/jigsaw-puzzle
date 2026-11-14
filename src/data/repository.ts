@@ -40,9 +40,6 @@ const K = {
   photo: (id: string) => `photo:${id}`,
 };
 
-/** Old (milestone 5) settings location, migrated once. */
-const LEGACY_SETTINGS_KEY = 'jigsaw.settings.v1';
-
 /**
  * Everything the app stores on the device. All writes go through one queue, so a save that is
  * triggered while another is still running can never interleave with it.
@@ -62,19 +59,7 @@ export class Repository {
 
   async loadSettings(): Promise<Settings> {
     const stored = await this.store.get<unknown>(K.settings);
-    if (stored !== undefined) return sanitize(stored);
-    try {
-      const legacy = globalThis.localStorage?.getItem(LEGACY_SETTINGS_KEY);
-      if (legacy) {
-        const settings = sanitize(JSON.parse(legacy));
-        await this.saveSettings(settings);
-        globalThis.localStorage.removeItem(LEGACY_SETTINGS_KEY);
-        return settings;
-      }
-    } catch {
-      /* ignore broken legacy data */
-    }
-    return { ...DEFAULT_SETTINGS };
+    return stored === undefined ? { ...DEFAULT_SETTINGS } : sanitize(stored);
   }
 
   saveSettings(settings: Settings): Promise<void> {

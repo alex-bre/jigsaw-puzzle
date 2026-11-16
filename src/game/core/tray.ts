@@ -52,34 +52,3 @@ export function visibleTray(state: PuzzleState, edgesOnly: boolean): number[] {
     ? state.tray.filter((id) => isEdgePiece(state, state.pieces[id]))
     : [...state.tray];
 }
-
-/** Sorts the tray: edge pieces first, then by colour (`colorKeys` indexed by piece id). */
-export function sortTray(state: PuzzleState, colorKeys: readonly number[]): void {
-  state.tray.sort((a, b) => {
-    const ea = isEdgePiece(state, state.pieces[a]) ? 0 : 1;
-    const eb = isEdgePiece(state, state.pieces[b]) ? 0 : 1;
-    return ea - eb || colorKeys[a] - colorKeys[b] || a - b;
-  });
-}
-
-/**
- * Sort key that groups similar colours: twelve hue families in rainbow order (each sorted
- * dark → light), followed by greys / near-black / near-white sorted by lightness.
- */
-export function colorSortKey(r: number, g: number, b: number): number {
-  const rn = r / 255;
-  const gn = g / 255;
-  const bn = b / 255;
-  const max = Math.max(rn, gn, bn);
-  const min = Math.min(rn, gn, bn);
-  const l = (max + min) / 2;
-  const d = max - min;
-  const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
-  if (s < 0.18 || l < 0.1 || l > 0.92) return 1200 + l * 99;
-  let hue: number;
-  if (max === rn) hue = 60 * (((gn - bn) / d + 6) % 6);
-  else if (max === gn) hue = 60 * ((bn - rn) / d + 2);
-  else hue = 60 * ((rn - gn) / d + 4);
-  const family = Math.floor(((hue + 15) % 360) / 30);
-  return family * 100 + l * 99;
-}

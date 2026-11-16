@@ -13,11 +13,9 @@ import { dropGroup, findSnap } from '../src/game/core/snap';
 import { computePlayArea, contentBounds } from '../src/game/core/playArea';
 import {
   canReturnToTray,
-  colorSortKey,
   fillTray,
   isEdgePiece,
   returnToTray,
-  sortTray,
   takeFromTray,
   visibleTray,
 } from '../src/game/core/tray';
@@ -250,32 +248,12 @@ describe('tray', () => {
     expect(s.pieces[0].group).not.toBe(s.pieces[1].group);
   });
 
-  it('filters edge pieces and sorts edges first, then by colour', () => {
+  it('filters edge pieces', () => {
     const s = puzzle(4, 4);
     fillTray(s, 3);
     const edges = visibleTray(s, true);
     expect(edges).toHaveLength(12);
     expect(edges.every((id) => isEdgePiece(s, s.pieces[id]))).toBe(true);
-    const keys = s.pieces.map((p) => 100 - p.id);
-    sortTray(s, keys);
-    const firstInner = s.tray.findIndex((id) => !isEdgePiece(s, s.pieces[id]));
-    expect(firstInner).toBe(12);
-    // Within the edge pieces, sorted by key (descending id here).
-    const edgeIds = s.tray.slice(0, 12);
-    expect(edgeIds).toEqual([...edgeIds].sort((a, b) => b - a));
-  });
-
-  it('colour keys group hues and put greys last', () => {
-    const red = colorSortKey(220, 30, 30);
-    const darkRed = colorSortKey(120, 10, 10);
-    const green = colorSortKey(30, 180, 40);
-    const blue = colorSortKey(30, 60, 200);
-    const grey = colorSortKey(128, 128, 128);
-    expect(Math.floor(red / 100)).toBe(Math.floor(darkRed / 100));
-    expect(darkRed).toBeLessThan(red);
-    expect(red).toBeLessThan(green);
-    expect(green).toBeLessThan(blue);
-    expect(blue).toBeLessThan(grey);
   });
 });
 

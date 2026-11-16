@@ -446,12 +446,6 @@ export class App {
       { class: 'toolbar' },
       helperToggle('ghost', 'eye', t('ghost'), t('ghostHint')),
       helperToggle('edgesOnly', 'edges', t('edges'), t('edgesHint')),
-      toolButton({
-        icon: 'sort',
-        label: t('sort'),
-        title: t('sortHint'),
-        onClick: () => this.game.sortTray(),
-      }),
     );
     this.topbar.replaceWith(topbar);
     this.toolbar.replaceWith(toolbar);

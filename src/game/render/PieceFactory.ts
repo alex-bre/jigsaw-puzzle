@@ -202,31 +202,3 @@ class AtlasBuilder {
     };
   }
 }
-
-/**
- * Average colour of every grid cell as [r, g, b], by letting the browser downscale the image to
- * cols×rows. Reading pixels back forces pending canvas work to finish, so call this lazily.
- */
-export function averageColors(
-  image: SourceImage,
-  cols: number,
-  rows: number,
-): [number, number, number][] {
-  // Downscale in two steps; a single huge downscale can skip pixels in some browsers.
-  const mid = document.createElement('canvas');
-  mid.width = cols * 8;
-  mid.height = rows * 8;
-  const midCtx = mid.getContext('2d')!;
-  midCtx.imageSmoothingQuality = 'high';
-  midCtx.drawImage(image, 0, 0, mid.width, mid.height);
-  const small = document.createElement('canvas');
-  small.width = cols;
-  small.height = rows;
-  const ctx = small.getContext('2d', { willReadFrequently: true })!;
-  ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(mid, 0, 0, cols, rows);
-  const data = ctx.getImageData(0, 0, cols, rows).data;
-  const out: [number, number, number][] = [];
-  for (let i = 0; i < cols * rows; i++) out.push([data[i * 4], data[i * 4 + 1], data[i * 4 + 2]]);
-  return out;
-}

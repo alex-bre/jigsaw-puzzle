@@ -6,18 +6,10 @@ import { computePlayArea, contentBounds, type Rect } from './core/playArea';
 import { randomSeed } from './core/rng';
 import { deserializePuzzle, serializePuzzle, type PuzzleSave } from './core/serialize';
 import { dropGroup } from './core/snap';
-import {
-  canReturnToTray,
-  colorSortKey,
-  fillTray,
-  returnToTray,
-  sortTray,
-  takeFromTray,
-  visibleTray,
-} from './core/tray';
+import { canReturnToTray, fillTray, returnToTray, takeFromTray, visibleTray } from './core/tray';
 import { Camera } from './render/Camera';
 import { Input } from './render/Input';
-import { averageColors, buildPieceGraphics, type SourceImage } from './render/PieceFactory';
+import { buildPieceGraphics, type SourceImage } from './render/PieceFactory';
 import { PuzzleView } from './render/PuzzleView';
 import { TrayView, type TrayRect } from './render/TrayView';
 
@@ -28,7 +20,7 @@ export interface GameEvents {
   onSnap(locked: boolean): void;
   /** Any touch on the game (e.g. to unlock audio on the first touch). */
   onActivity(): void;
-  /** The puzzle changed in a way worth saving (piece moved, tray sorted, …). */
+  /** The puzzle changed in a way worth saving (piece moved, …). */
   onStateChange(): void;
 }
 
@@ -68,9 +60,6 @@ export class GameController {
   private view: PuzzleView | null = null;
   private tray: TrayView | null = null;
   private trayRect: TrayRect = { x: 0, y: 0, width: 1, height: 1, axis: 'x' };
-  private image: SourceImage | null = null;
-  /** Colour sort keys per piece; computed on the first sort (needs a pixel read-back). */
-  private colorKeys: number[] | null = null;
   private playArea: Rect = { x: 0, y: 0, width: 1, height: 1 };
   private drag: Drag | null = null;
   private options: HelperOptions = { ghost: false, edgesOnly: false };
@@ -187,8 +176,6 @@ export class GameController {
     const cut = createCut(state.cols, state.rows, state.imageWidth, state.imageHeight, state.seed);
     const gfx = buildPieceGraphics(image, cut);
     this.state = state;
-    this.image = image;
-    this.colorKeys = null;
     this.playArea = computePlayArea(state);
     this.view = new PuzzleView(state, gfx, image);
     this.view.setGhostVisible(this.options.ghost);
@@ -247,19 +234,6 @@ export class GameController {
     this.invalidate();
   }
 
-  /** Sorts the tray: edge pieces first, then by colour. */
-  sortTray(): void {
-    if (!this.state || !this.image) return;
-    this.colorKeys ??= averageColors(this.image, this.state.cols, this.state.rows).map(
-      ([r, g, b]) => colorSortKey(r, g, b),
-    );
-    sortTray(this.state, this.colorKeys);
-    this.refreshTray();
-    this.tray?.scrollToStart();
-    this.invalidate();
-    this.events.onStateChange();
-  }
-
   private refreshTray(): void {
     if (!this.state || !this.tray) return;
     const items = visibleTray(this.state, this.options.edgesOnly);
@@ -310,7 +284,6 @@ export class GameController {
     this.tray = null;
     this.view = null;
     this.state = null;
-    this.image = null;
   }
 
   // --- Layout ---------------------------------------------------------------

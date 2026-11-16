@@ -111,6 +111,11 @@ export class GameController {
         this.invalidate();
       },
       trayStop: () => this.tray?.stopFling(),
+      trayButtonAt: (x, y) => this.tray?.buttonAt(x, y) ?? null,
+      trayStep: (direction) => {
+        this.tray?.step(direction, performance.now());
+        this.invalidate();
+      },
       pickFromTray: (id, x, y) => this.pickFromTray(id, x, y),
       pickFromBoard: (x, y) => this.pickFromBoard(x, y),
       dragMove: (x, y) => this.dragMove(x, y),

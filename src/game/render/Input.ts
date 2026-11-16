@@ -10,6 +10,10 @@ export interface InputHandlers {
   trayScroll(delta: number): void;
   trayFling(velocity: number): void;
   trayStop(): void;
+  /** The tray's arrow button at this point (-1 = back, 1 = forward), or null. */
+  trayButtonAt(sx: number, sy: number): -1 | 1 | null;
+  /** Scroll the tray one page back (-1) or forward (1), as if its arrow button was tapped. */
+  trayStep(direction: -1 | 1): void;
   /** Start dragging a piece out of the tray. */
   pickFromTray(id: number, sx: number, sy: number): void;
   /** Start dragging the piece on the board at this point; false if there is none. */
@@ -41,13 +45,15 @@ type Mode =
       pieceId: number | null;
       timer: number;
     }
-  | { kind: 'tray-scroll'; pointerId: number; samples: { t: number; pos: number }[] };
+  | { kind: 'tray-scroll'; pointerId: number; samples: { t: number; pos: number }[] }
+  | { kind: 'tray-button'; pointerId: number };
 
 /**
  * Pointer handling on the canvas.
  * Board: one finger on a piece drags it, on empty space pans; two fingers pinch-zoom.
  * Tray: swiping along the tray scrolls it; pulling a piece out of the tray (or holding it)
- * picks it up. Mouse wheel zooms the board or scrolls the tray.
+ * picks it up; its arrow buttons scroll it a page. Mouse wheel zooms the board or scrolls the
+ * tray.
  */
 export class Input {
   private readonly pointers = new Map<number, Pointer>();
@@ -102,7 +108,11 @@ export class Input {
     const busy = this.mode.kind === 'drag' || this.mode.kind.startsWith('tray');
     if (busy) return; // ignore extra fingers while dragging a piece or using the tray
     if (this.pointers.size === 1) {
-      if (this.handlers.inTray(p.x, p.y)) {
+      const direction = this.handlers.trayButtonAt(p.x, p.y);
+      if (direction !== null) {
+        this.handlers.trayStep(direction);
+        this.mode = { kind: 'tray-button', pointerId: e.pointerId };
+      } else if (this.handlers.inTray(p.x, p.y)) {
         this.handlers.trayStop();
         const pieceId = this.handlers.trayPieceAt(p.x, p.y);
         const pointerId = e.pointerId;

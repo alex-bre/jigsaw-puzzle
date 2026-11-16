@@ -1,5 +1,6 @@
 import { t } from '../../i18n';
-import { h, icon } from '../dom';
+import { h } from '../dom';
+import { button, heroCard } from '../kit';
 import { screen, type ScreenContext } from './context';
 
 export function homeScreen(ctx: ScreenContext): HTMLElement {
@@ -13,52 +14,40 @@ export function homeScreen(ctx: ScreenContext): HTMLElement {
       h('h1', { class: 'home-title' }, t('appTitle')),
       h('p', { class: 'home-subtitle' }, t('homeSubtitle')),
       latest && latestPicture
-        ? h(
-            'button',
-            {
-              class: 'continue-card',
-              type: 'button',
-              onclick: () => void ctx.continuePuzzle(latest.pictureId),
-            },
-            h('img', { src: latestPicture.thumbUrl, alt: '' }),
-            h(
-              'span',
-              { class: 'continue-text' },
-              h('strong', {}, t('continuePuzzle')),
-              h('span', {}, latestPicture.title),
-              h(
-                'span',
-                { class: 'muted' },
-                t('progressLabel', { placed: latest.placed, total: latest.total }),
-              ),
-            ),
-            icon('play'),
-          )
+        ? heroCard({
+            image: latestPicture.thumbUrl,
+            title: t('continuePuzzle'),
+            lines: [
+              latestPicture.title,
+              t('progressLabel', { placed: latest.placed, total: latest.total }),
+            ],
+            onClick: () => void ctx.continuePuzzle(latest.pictureId),
+          })
         : null,
-      h(
-        'button',
-        {
-          class: 'btn btn-primary btn-big',
-          type: 'button',
-          onclick: () => ctx.go({ name: 'pictures' }),
-        },
-        icon('plus'),
-        h('span', {}, t('newPuzzle')),
-      ),
+      button({
+        label: t('newPuzzle'),
+        icon: 'plus',
+        tone: 'primary',
+        size: 'lg',
+        block: true,
+        onClick: () => ctx.go({ name: 'pictures' }),
+      }),
       ctx.saves.length > 0
-        ? h(
-            'button',
-            { class: 'btn btn-big', type: 'button', onclick: () => ctx.go({ name: 'puzzles' }) },
-            icon('stack'),
-            h('span', {}, t('myPuzzlesCount', { n: ctx.saves.length })),
-          )
+        ? button({
+            label: t('myPuzzlesCount', { n: ctx.saves.length }),
+            icon: 'stack',
+            size: 'lg',
+            block: true,
+            onClick: () => ctx.go({ name: 'puzzles' }),
+          })
         : null,
-      h(
-        'button',
-        { class: 'btn btn-big', type: 'button', onclick: () => ctx.go({ name: 'settings' }) },
-        icon('settings'),
-        h('span', {}, t('settings')),
-      ),
+      button({
+        label: t('settings'),
+        icon: 'settings',
+        size: 'lg',
+        block: true,
+        onClick: () => ctx.go({ name: 'settings' }),
+      }),
     ),
   );
 }

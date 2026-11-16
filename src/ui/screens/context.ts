@@ -1,7 +1,8 @@
 import type { SaveMeta, Stats } from '../../data/repository';
 import type { Settings } from '../../settings';
 import { t } from '../../i18n';
-import { h, icon } from '../dom';
+import { h } from '../dom';
+import { badge, button } from '../kit';
 import type { Route } from '../router';
 
 /** A picture the player can puzzle: from the catalogue or one of their own photos. */
@@ -49,14 +50,7 @@ export function screenHeader(ctx: ScreenContext, title: string, showBack = true)
   return h(
     'header',
     { class: 'screen-header' },
-    showBack
-      ? h(
-          'button',
-          { class: 'btn', type: 'button', onclick: () => ctx.back() },
-          icon('back'),
-          h('span', {}, t('back')),
-        )
-      : null,
+    showBack ? button({ label: t('back'), icon: 'back', onClick: () => ctx.back() }) : null,
     h('h1', {}, title),
   );
 }
@@ -70,10 +64,10 @@ export function statusBadge(ctx: ScreenContext, pictureId: string): HTMLElement 
   const save = ctx.saves.find((s) => s.pictureId === pictureId);
   if (save) {
     const pct = Math.round((100 * save.placed) / Math.max(1, save.total));
-    return h('span', { class: 'badge badge-started' }, `${t('started')} · ${pct} %`);
+    return badge(`${t('started')} · ${pct} %`);
   }
   if (ctx.stats[pictureId]?.solved) {
-    return h('span', { class: 'badge badge-solved' }, icon('check'), t('solved'));
+    return badge(t('solved'), { tone: 'primary', icon: 'check' });
   }
   return null;
 }

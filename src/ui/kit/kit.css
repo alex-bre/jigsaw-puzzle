@@ -1,0 +1,662 @@
+/*
+ * UI kit: design tokens and reusable components. Not tied to the jigsaw game.
+ *
+ * Every tappable thing stands on a solid "ledge" and sinks into it when pressed, so players can
+ * see at a glance what can be tapped. Components are a mechanic plus a shape:
+ *
+ *   Mechanics  .raised   solid face + ledge. Tones: .tone-primary, .tone-danger.
+ *                        aria-pressed="true" / aria-checked="true" shows the selected (primary) look.
+ *              .quiet    flat with a dashed outline, for extras such as "Delete photo" or "Add".
+ *   Shapes     .btn (.btn-sm, .btn-lg, .btn-block), .choice, .tile, .tool, .card, .hero-card
+ *
+ * Build components with the helpers in ./index.ts instead of combining classes by hand.
+ * A shape changes its depth or colours only through the --r-* / --q-* variables below.
+ */
+
+:root {
+  /* Colours */
+  --surface: #fffaf2;
+  --surface-raised: #ffffff;
+  --surface-2: #f1e9dc;
+  --text: #1f2a28;
+  --text-muted: #4d5a57;
+  --border: #d6cbb9;
+  --border-ledge: #cdbfa8;
+  --primary: #1f6f5c;
+  --primary-press: #175646;
+  --primary-ledge: #134a3c;
+  --primary-soft: #e3f1ec;
+  --primary-soft-press: #cfe6dd;
+  --on-primary: #ffffff;
+  --danger: #b3261e;
+  --danger-press: #8c1d18;
+  --danger-ledge: #7d1a15;
+  --danger-soft: #f7e4e1;
+  --danger-dash: #c9a8a4;
+  /* Accent: "in progress" badges and the keyboard focus ring. */
+  --accent: #f2b134;
+  --on-accent: #2a1d00;
+  --disabled: #e7e0d3;
+  --disabled-ink: #857c6e;
+  --disabled-dash: #cfc3b0;
+  --scrim: rgba(10, 20, 18, 0.55);
+
+  /* Type. Sizes are deliberately generous: the apps target older players too. */
+  --font:
+    'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
+  --text-sm: 17px;
+  --text-base: 20px;
+  --text-md: 22px;
+  --text-lg: 24px;
+  --text-xl: 30px;
+
+  /* Shape */
+  --touch: 60px;
+  --radius-sm: 12px;
+  --radius: 16px;
+  --radius-lg: 22px;
+  --ledge-sm: 4px;
+  --ledge: 5px;
+  --ledge-lg: 6px;
+  --gap: 12px;
+  --shadow-float: 0 10px 40px rgba(0, 0, 0, 0.35);
+}
+
+body {
+  color: var(--text);
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.4;
+}
+
+/* ---- Icons ---- */
+.icon {
+  width: 28px;
+  height: 28px;
+  flex: none;
+}
+
+.icon-check {
+  stroke-width: 3;
+}
+
+.icon-play {
+  fill: currentColor;
+  stroke-width: 2;
+}
+
+.icon-plus,
+.icon-back,
+.icon-next {
+  stroke-width: 2.6;
+}
+
+/* ---- Mechanic: raised (face + ledge, sinks when pressed) ---- */
+.raised {
+  --r-face: var(--surface-raised);
+  --r-face-down: var(--surface-2);
+  --r-ink: var(--text);
+  --r-edge: var(--border);
+  --r-shade: var(--border-ledge);
+  --r-depth: var(--ledge);
+  margin: 0 0 var(--r-depth);
+  border: 2px solid var(--r-edge);
+  background: var(--r-face);
+  color: var(--r-ink);
+  box-shadow: 0 var(--r-depth) 0 var(--r-shade);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    transform 70ms ease-out,
+    box-shadow 70ms ease-out;
+}
+
+.raised:active:not(:disabled) {
+  transform: translateY(var(--r-depth));
+  box-shadow: 0 0 0 var(--r-shade);
+  background: var(--r-face-down);
+}
+
+.tone-primary,
+.raised[aria-pressed='true'],
+.raised[aria-checked='true'] {
+  --r-face: var(--primary);
+  --r-face-down: var(--primary-press);
+  --r-ink: var(--on-primary);
+  --r-edge: var(--primary);
+  --r-shade: var(--primary-ledge);
+}
+
+.tone-danger {
+  --r-face: var(--danger);
+  --r-face-down: var(--danger-press);
+  --r-ink: #ffffff;
+  --r-edge: var(--danger);
+  --r-shade: var(--danger-ledge);
+}
+
+/* Not available: flat, dashed, greyed. */
+.raised:disabled {
+  --r-face: var(--disabled);
+  --r-ink: var(--disabled-ink);
+  --r-edge: var(--disabled-dash);
+  border-style: dashed;
+  box-shadow: none;
+  cursor: default;
+}
+
+/* ---- Mechanic: quiet (flat, dashed outline) ---- */
+.quiet {
+  --q-ink: var(--primary);
+  --q-dash: var(--primary);
+  --q-face-down: var(--primary-soft);
+  /* Same footprint as a raised neighbour, so rows stay aligned. */
+  --r-depth: var(--ledge);
+  margin: 0 0 var(--r-depth);
+  border: 2px dashed var(--q-dash);
+  background: transparent;
+  color: var(--q-ink);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.quiet:active {
+  background: var(--q-face-down);
+}
+
+.quiet.tone-danger {
+  --q-ink: var(--danger);
+  --q-dash: var(--danger-dash);
+  --q-face-down: var(--danger-soft);
+}
+
+.raised:focus-visible,
+.quiet:focus-visible {
+  outline: 4px solid var(--accent);
+  outline-offset: 4px;
+}
+
+/* ---- Shape: button ---- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: var(--touch);
+  min-height: var(--touch);
+  padding: 8px 20px;
+  border-radius: var(--radius);
+  font-size: var(--text-base);
+  line-height: 1.2;
+  text-align: center;
+}
+
+/* Compact, for bars around the game board. */
+.btn-sm {
+  --r-depth: var(--ledge-sm);
+  gap: 8px;
+  min-height: 56px;
+  padding: 6px 16px;
+  border-radius: 14px;
+  font-size: 19px;
+}
+
+.btn-sm .icon {
+  width: 26px;
+  height: 26px;
+}
+
+/* Main actions of a screen. */
+.btn-lg {
+  --r-depth: var(--ledge-lg);
+  gap: 12px;
+  min-height: 76px;
+  padding: 10px 24px;
+  font-size: 26px;
+}
+
+.btn-lg .icon {
+  width: 30px;
+  height: 30px;
+}
+
+.btn-block {
+  display: flex;
+  width: 100%;
+}
+
+/* Title plus a smaller second line, e.g. "Continue puzzle / 31 of 48 pieces placed". */
+.two-line {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.two-line small {
+  font-size: var(--text-sm);
+  opacity: 0.9;
+}
+
+/* ---- Shape: choice (one of a group; a check mark shows the selected one) ---- */
+.field {
+  margin-bottom: 8px;
+}
+
+.field-label {
+  margin: 24px 0 12px;
+  font-size: var(--text-lg);
+  line-height: 1.25;
+}
+
+.choice-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap);
+}
+
+.choice {
+  display: inline-flex;
+  flex: 1 1 120px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: var(--touch);
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  font-size: var(--text-base);
+  line-height: 1.2;
+}
+
+.choice .icon-check {
+  display: none;
+  width: 26px;
+  height: 26px;
+}
+
+.choice[aria-pressed='true'] .icon-check {
+  display: block;
+}
+
+.swatch {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+
+/* ---- Shape: tile (a big number with a unit and an optional note) ---- */
+.tile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 92px;
+  padding: 6px;
+  border-radius: var(--radius);
+  line-height: 1.25;
+}
+
+.tile-value {
+  font-size: 32px;
+  line-height: 1.05;
+}
+
+.tile-unit {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  font-weight: 400;
+}
+
+.tile-note {
+  color: var(--primary);
+  font-size: 15px;
+}
+
+.tile:is(.tone-primary, [aria-pressed='true']) :is(.tile-unit, .tile-note) {
+  color: inherit;
+}
+
+/* ---- Shape: tool (icon above label, for toolbars) ---- */
+.tool {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 88px;
+  min-height: 70px;
+  padding: 6px;
+  border-radius: 14px;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.tool .icon {
+  stroke-width: 2.2;
+}
+
+/* ---- Shape: card (picture on top, label below) ---- */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 599px) {
+  .card-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  border-radius: var(--radius);
+  text-align: left;
+}
+
+.card-media {
+  position: relative;
+  display: block;
+}
+
+.card-img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: var(--surface-2);
+}
+
+.card-img-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+}
+
+.card-img-icon .icon {
+  width: 56px;
+  height: 56px;
+  stroke-width: 2;
+}
+
+.card-label {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 14px 14px;
+  line-height: 1.25;
+  /* Long German words ("Wasserschwein") must wrap instead of being cut off. */
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+.card-label strong {
+  font-size: var(--text-md);
+}
+
+.card-label .muted {
+  font-weight: 400;
+}
+
+.card.quiet {
+  border-width: 3px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.card.quiet:active {
+  background: var(--q-face-down);
+}
+
+.quiet.tone-danger {
+  --q-ink: var(--danger);
+  --q-dash: var(--danger-dash);
+  --q-face-down: var(--danger-soft);
+}
+
+.card .badge {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+}
+
+/* ---- Shape: hero card (the one thing to do next, e.g. "Continue puzzle") ---- */
+.hero-card {
+  --r-face: var(--primary-soft);
+  --r-face-down: var(--primary-soft-press);
+  --r-edge: var(--primary);
+  --r-shade: var(--primary);
+  --r-depth: var(--ledge-lg);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 14px;
+  border-width: 3px;
+  border-radius: 18px;
+  text-align: left;
+}
+
+.hero-card img {
+  width: 120px;
+  height: 90px;
+  flex: none;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
+.hero-card-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  font-weight: 400;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.hero-card-text strong {
+  font-size: var(--text-lg);
+}
+
+.hero-card-go {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.hero-card-go .icon {
+  width: 30px;
+  height: 30px;
+}
+
+@media (max-width: 400px) {
+  .hero-card {
+    gap: 12px;
+    padding: 10px;
+  }
+
+  .hero-card img {
+    width: 88px;
+    height: 66px;
+  }
+
+  .hero-card-text strong {
+    font-size: var(--text-md);
+  }
+
+  .hero-card-go {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+/* ---- Badges and icon circles (not tappable: no ledge) ---- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.25;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.badge.tone-primary {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.badge .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.icon-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 76px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.icon-circle .icon {
+  width: 46px;
+  height: 46px;
+}
+
+/* ---- Panel (groups content; not tappable itself) ---- */
+.panel {
+  overflow: hidden;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+}
+
+/* ---- Dialog ---- */
+.dialog {
+  width: min(560px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  padding: 24px 22px 20px;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-float);
+  overflow: auto;
+}
+
+.dialog::backdrop {
+  background: var(--scrim);
+}
+
+.dialog .icon-circle {
+  margin: 0 auto 14px;
+}
+
+.dialog-title {
+  margin: 0;
+  font-size: var(--text-xl);
+  line-height: 1.2;
+  text-align: center;
+}
+
+.dialog-text {
+  margin: 6px 0 20px;
+  font-size: var(--text-md);
+  text-align: center;
+  text-wrap: pretty;
+}
+
+.dialog-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dialog-actions .btn {
+  min-height: 64px;
+  font-size: var(--text-md);
+}
+
+/* Short screens (phones in landscape): keep every dialog button visible without scrolling. */
+@media (max-height: 520px) {
+  .dialog {
+    padding: 12px 16px;
+  }
+
+  .dialog .icon-circle {
+    display: none;
+  }
+
+  .dialog-text {
+    margin: 4px 0 12px;
+  }
+
+  .dialog-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .dialog-actions .btn {
+    flex: 1 1 180px;
+    min-height: var(--touch);
+  }
+}
+
+/* ---- Text helpers ---- */
+.muted {
+  color: var(--text-muted);
+}
+
+.lead-text {
+  font-size: var(--text-lg);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

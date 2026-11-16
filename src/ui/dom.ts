@@ -52,9 +52,12 @@ export const icons = {
   sort: '<path d="M7 4v16M3.5 16.5 7 20l3.5-3.5M14 6h7M14 12h5M14 18h3"/>',
 };
 
-export function icon(name: keyof typeof icons): SVGSVGElement {
+export type IconName = keyof typeof icons;
+
+/** An icon as `<svg class="icon icon-NAME">`; size, stroke width and fill can be tuned in CSS. */
+export function icon(name: IconName): SVGSVGElement {
   const wrap = document.createElement('span');
-  wrap.innerHTML = `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${icons[name]}</svg>`;
+  wrap.innerHTML = `<svg class="icon icon-${name}" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${icons[name]}</svg>`;
   return wrap.firstElementChild as SVGSVGElement;
 }
 

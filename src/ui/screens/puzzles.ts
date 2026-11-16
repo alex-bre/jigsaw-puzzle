@@ -1,5 +1,6 @@
 import { formatDate, t } from '../../i18n';
-import { h, icon } from '../dom';
+import { h } from '../dom';
+import { button } from '../kit';
 import { screen, screenHeader, type ScreenContext } from './context';
 
 /** All puzzles in progress, with "Continue" and "Delete". */
@@ -10,7 +11,7 @@ export function puzzlesScreen(ctx: ScreenContext): HTMLElement {
     return [
       h(
         'li',
-        { class: 'puzzle-row' },
+        { class: 'panel' },
         h(
           'button',
           {
@@ -30,34 +31,27 @@ export function puzzlesScreen(ctx: ScreenContext): HTMLElement {
         h(
           'div',
           { class: 'puzzle-actions' },
-          h(
-            'button',
-            {
-              class: 'btn btn-primary',
-              type: 'button',
-              onclick: () => void ctx.continuePuzzle(save.pictureId),
+          button({
+            label: t('continueShort'),
+            icon: 'play',
+            tone: 'primary',
+            onClick: () => void ctx.continuePuzzle(save.pictureId),
+          }),
+          button({
+            label: t('delete'),
+            icon: 'trash',
+            tone: 'danger',
+            quiet: true,
+            onClick: async () => {
+              const ok = await ctx.confirm({
+                title: t('deletePuzzleTitle'),
+                text: t('deletePuzzleText', { title: picture.title }),
+                confirmLabel: t('delete'),
+                danger: true,
+              });
+              if (ok) await ctx.deleteSave(save.pictureId);
             },
-            icon('play'),
-            h('span', {}, t('continueShort')),
-          ),
-          h(
-            'button',
-            {
-              class: 'btn btn-danger-quiet',
-              type: 'button',
-              onclick: async () => {
-                const ok = await ctx.confirm({
-                  title: t('deletePuzzleTitle'),
-                  text: t('deletePuzzleText', { title: picture.title }),
-                  confirmLabel: t('delete'),
-                  danger: true,
-                });
-                if (ok) await ctx.deleteSave(save.pictureId);
-              },
-            },
-            icon('trash'),
-            h('span', {}, t('delete')),
-          ),
+          }),
         ),
       ),
     ];
@@ -71,16 +65,14 @@ export function puzzlesScreen(ctx: ScreenContext): HTMLElement {
           'div',
           { class: 'empty' },
           h('p', { class: 'lead-text' }, t('noPuzzles')),
-          h(
-            'button',
-            {
-              class: 'btn btn-primary btn-big',
-              type: 'button',
-              onclick: () => ctx.go({ name: 'pictures' }),
-            },
-            icon('plus'),
-            h('span', {}, t('newPuzzle')),
-          ),
+          button({
+            label: t('newPuzzle'),
+            icon: 'plus',
+            tone: 'primary',
+            size: 'lg',
+            block: true,
+            onClick: () => ctx.go({ name: 'pictures' }),
+          }),
         ),
   );
 }

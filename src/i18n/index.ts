@@ -47,7 +47,8 @@ const en = {
     'All pictures may be used freely (public domain or CC0). Many thanks to the photographers, artists and museums who shared them.',
   creditBy: 'by {author}',
   creditSource: 'Source',
-  softwareCredits: 'This app uses PixiJS (MIT licence).',
+  softwareCredits:
+    'This app uses PixiJS (MIT licence) and the font Atkinson Hyperlegible by the Braille Institute (SIL Open Font License 1.1).',
   myPuzzles: 'My puzzles',
   myPuzzlesCount: 'My puzzles ({n})',
   noPuzzles: 'No puzzles in progress. Choose a picture to start one.',
@@ -121,7 +122,8 @@ const de: Record<MessageKey, string> = {
     'Alle Bilder sind frei verwendbar (gemeinfrei oder CC0). Herzlichen Dank an die Fotografen, Künstler und Museen, die sie geteilt haben.',
   creditBy: 'von {author}',
   creditSource: 'Quelle',
-  softwareCredits: 'Diese App verwendet PixiJS (MIT-Lizenz).',
+  softwareCredits:
+    'Diese App verwendet PixiJS (MIT-Lizenz) und die Schrift Atkinson Hyperlegible des Braille Institute (SIL Open Font License 1.1).',
   myPuzzles: 'Meine Puzzles',
   myPuzzlesCount: 'Meine Puzzles ({n})',
   noPuzzles: 'Noch keine angefangenen Puzzles. Wählen Sie ein Bild, um eines zu beginnen.',

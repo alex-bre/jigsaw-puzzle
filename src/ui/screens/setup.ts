@@ -1,6 +1,7 @@
 import { PIECE_COUNTS } from '../../game/core/grid';
 import { formatDuration, t } from '../../i18n';
-import { h, icon } from '../dom';
+import { h } from '../dom';
+import { button, tile, twoLine } from '../kit';
 import { screen, screenHeader, type ScreenContext } from './context';
 
 /**
@@ -39,15 +40,12 @@ export function setupScreen(ctx: ScreenContext, pictureId: string): HTMLElement 
 
   const buttons = PIECE_COUNTS.map((n) => {
     const b = bestFor(n);
-    return h(
-      'button',
-      { class: 'btn count-btn', type: 'button', onclick: () => void start(n) },
-      h('strong', {}, String(n)),
-      h('span', {}, t('piecesUnit')),
-      b !== undefined
-        ? h('span', { class: 'count-best' }, t('bestTime', { time: formatDuration(b) }))
-        : null,
-    );
+    return tile({
+      value: String(n),
+      unit: t('piecesUnit'),
+      note: b !== undefined ? t('bestTime', { time: formatDuration(b) }) : undefined,
+      onClick: () => void start(n),
+    });
   });
 
   return screen(
@@ -60,45 +58,40 @@ export function setupScreen(ctx: ScreenContext, pictureId: string): HTMLElement 
         'div',
         { class: 'setup-counts' },
         save
-          ? h(
-              'button',
-              {
-                class: 'btn btn-primary btn-big setup-continue',
-                type: 'button',
-                onclick: () => void ctx.continuePuzzle(picture.id),
-              },
-              icon('play'),
-              h(
-                'span',
-                { class: 'two-line' },
-                h('span', {}, t('continuePuzzle')),
-                h('small', {}, t('progressLabel', { placed: save.placed, total: save.total })),
+          ? button({
+              label: twoLine(
+                t('continuePuzzle'),
+                t('progressLabel', { placed: save.placed, total: save.total }),
               ),
-            )
+              icon: 'play',
+              tone: 'primary',
+              size: 'lg',
+              block: true,
+              class: 'setup-continue',
+              onClick: () => void ctx.continuePuzzle(picture.id),
+            })
           : null,
         h('h2', { class: 'section-title' }, save ? t('startOver') : t('choosePieces')),
-        h('div', { class: 'count-grid' }, ...buttons),
+        h('div', { class: 'tile-grid' }, ...buttons),
         isPhoto
-          ? h(
-              'button',
-              {
-                class: 'btn btn-danger-quiet setup-delete',
-                type: 'button',
-                onclick: async () => {
-                  const ok = await ctx.confirm({
-                    title: t('deletePhotoTitle'),
-                    text: t('deletePhotoText'),
-                    confirmLabel: t('delete'),
-                    danger: true,
-                  });
-                  if (!ok) return;
-                  await ctx.deletePhoto(picture.id);
-                  ctx.go({ name: 'pictures' });
-                },
+          ? button({
+              label: t('deletePhoto'),
+              icon: 'trash',
+              tone: 'danger',
+              quiet: true,
+              class: 'setup-delete',
+              onClick: async () => {
+                const ok = await ctx.confirm({
+                  title: t('deletePhotoTitle'),
+                  text: t('deletePhotoText'),
+                  confirmLabel: t('delete'),
+                  danger: true,
+                });
+                if (!ok) return;
+                await ctx.deletePhoto(picture.id);
+                ctx.go({ name: 'pictures' });
               },
-              icon('trash'),
-              h('span', {}, t('deletePhoto')),
-            )
+            })
           : null,
       ),
     ),

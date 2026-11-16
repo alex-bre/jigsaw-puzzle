@@ -2,7 +2,8 @@ import { catalog, imagesIn, thumbUrl } from '../../content/catalog';
 import { currentLanguage, t } from '../../i18n';
 import { isNative } from '../../platform/native';
 import { pickPhoto, type PhotoSource } from '../../platform/photos';
-import { h, icon } from '../dom';
+import { h } from '../dom';
+import { card } from '../kit';
 import { screen, screenHeader, statusBadge, type PictureRef, type ScreenContext } from './context';
 
 /** Category overview plus the player's own photos. */
@@ -34,13 +35,8 @@ export function picturesScreen(ctx: ScreenContext): HTMLElement {
       console.warn('Choosing a photo failed', err);
       alert(t('photoError'));
     });
-  const addCard = (iconName: 'photo' | 'camera', label: string, onclick: () => void) =>
-    h(
-      'button',
-      { class: 'card card-add', type: 'button', onclick },
-      h('span', { class: 'card-img card-img-icon' }, icon(iconName)),
-      h('span', { class: 'card-label' }, h('strong', {}, label)),
-    );
+  const addCard = (iconName: 'photo' | 'camera', label: string, onClick: () => void) =>
+    card({ icon: iconName, title: label, quiet: true, onClick });
   // In the app: the system photo picker and the camera. In a browser: a file input.
   const addCards = isNative()
     ? [
@@ -51,26 +47,12 @@ export function picturesScreen(ctx: ScreenContext): HTMLElement {
 
   const categories = catalog.categories.map((cat) => {
     const imgs = imagesIn(cat.id);
-    return h(
-      'button',
-      {
-        class: 'card',
-        type: 'button',
-        onclick: () => ctx.go({ name: 'category', categoryId: cat.id }),
-      },
-      h('img', {
-        class: 'card-img',
-        src: imgs[0] ? thumbUrl(imgs[0].id) : '',
-        alt: '',
-        loading: 'lazy',
-      }),
-      h(
-        'span',
-        { class: 'card-label' },
-        h('strong', {}, cat.title[lang]),
-        h('span', { class: 'muted' }, t('picturesCount', { n: imgs.length })),
-      ),
-    );
+    return card({
+      image: imgs[0] ? thumbUrl(imgs[0].id) : undefined,
+      title: cat.title[lang],
+      subtitle: t('picturesCount', { n: imgs.length }),
+      onClick: () => ctx.go({ name: 'category', categoryId: cat.id }),
+    });
   });
 
   return screen(
@@ -96,15 +78,10 @@ export function categoryScreen(ctx: ScreenContext, categoryId: string): HTMLElem
 }
 
 function pictureCard(ctx: ScreenContext, p: PictureRef): HTMLElement {
-  return h(
-    'button',
-    { class: 'card', type: 'button', onclick: () => ctx.go({ name: 'setup', imageId: p.id }) },
-    h(
-      'span',
-      { class: 'card-media' },
-      h('img', { class: 'card-img', src: p.thumbUrl, alt: '', loading: 'lazy' }),
-      statusBadge(ctx, p.id),
-    ),
-    h('span', { class: 'card-label' }, h('strong', {}, p.title)),
-  );
+  return card({
+    image: p.thumbUrl,
+    title: p.title,
+    badge: statusBadge(ctx, p.id),
+    onClick: () => ctx.go({ name: 'setup', imageId: p.id }),
+  });
 }

@@ -1,40 +1,9 @@
 import { catalog, thumbUrl } from '../../content/catalog';
 import { currentLanguage, t, type MessageKey } from '../../i18n';
 import { BACKGROUNDS, type Background, type LanguageSetting } from '../../settings';
-import { h, icon } from '../dom';
+import { h } from '../dom';
+import { button, choiceGroup } from '../kit';
 import { screen, screenHeader, type ScreenContext } from './context';
-
-/** A row of large buttons of which exactly one is selected. */
-function choiceGroup<T extends string | boolean>(
-  label: string,
-  options: { value: T; label: string; swatch?: string }[],
-  selected: T,
-  onSelect: (value: T) => void,
-): HTMLElement {
-  const id = `group-${label.replace(/\W+/g, '-').toLowerCase()}`;
-  return h(
-    'section',
-    { class: 'setting' },
-    h('h2', { class: 'section-title', id }, label),
-    h(
-      'div',
-      { class: 'choice-group', role: 'group', 'aria-labelledby': id },
-      ...options.map((o) =>
-        h(
-          'button',
-          {
-            class: 'choice-btn',
-            type: 'button',
-            'aria-pressed': String(o.value === selected),
-            onclick: () => onSelect(o.value),
-          },
-          o.swatch ? h('span', { class: 'swatch', style: `background:${o.swatch}` }) : null,
-          h('span', {}, o.label),
-        ),
-      ),
-    ),
-  );
-}
 
 export function settingsScreen(ctx: ScreenContext): HTMLElement {
   const s = ctx.settings;
@@ -49,36 +18,45 @@ export function settingsScreen(ctx: ScreenContext): HTMLElement {
   };
   return screen(
     screenHeader(ctx, t('settings')),
-    choiceGroup<LanguageSetting>(
-      t('language'),
-      [
+    choiceGroup<LanguageSetting>({
+      label: t('language'),
+      options: [
         { value: 'auto', label: t('languageAuto') },
         { value: 'de', label: 'Deutsch' },
         { value: 'en', label: 'English' },
       ],
-      s.language,
-      (language) => ctx.updateSettings({ language }),
-    ),
-    choiceGroup(t('sound'), onOff, s.sound, (sound) => ctx.updateSettings({ sound })),
-    choiceGroup(t('vibration'), onOff, s.vibration, (vibration) =>
-      ctx.updateSettings({ vibration }),
-    ),
-    choiceGroup<Background>(
-      t('background'),
-      (Object.keys(BACKGROUNDS) as Background[]).map((b) => ({
+      selected: s.language,
+      onSelect: (language) => ctx.updateSettings({ language }),
+    }),
+    choiceGroup({
+      label: t('sound'),
+      options: onOff,
+      selected: s.sound,
+      onSelect: (sound) => ctx.updateSettings({ sound }),
+    }),
+    choiceGroup({
+      label: t('vibration'),
+      options: onOff,
+      selected: s.vibration,
+      onSelect: (vibration) => ctx.updateSettings({ vibration }),
+    }),
+    choiceGroup<Background>({
+      label: t('background'),
+      options: (Object.keys(BACKGROUNDS) as Background[]).map((b) => ({
         value: b,
         label: t(bgLabels[b]),
         swatch: BACKGROUNDS[b],
       })),
-      s.background,
-      (background) => ctx.updateSettings({ background }),
-    ),
-    h(
-      'button',
-      { class: 'btn btn-big', type: 'button', onclick: () => ctx.go({ name: 'credits' }) },
-      icon('info'),
-      h('span', {}, t('credits')),
-    ),
+      selected: s.background,
+      onSelect: (background) => ctx.updateSettings({ background }),
+    }),
+    button({
+      label: t('credits'),
+      icon: 'info',
+      size: 'lg',
+      block: true,
+      onClick: () => ctx.go({ name: 'credits' }),
+    }),
   );
 }
 

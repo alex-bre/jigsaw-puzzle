@@ -1,3 +1,5 @@
+// The UI kit's styles first, so the app's layout rules can build on them.
+import './ui/kit';
 import './styles.css';
 import { Repository } from './data/repository';
 import { appReady } from './platform/device';

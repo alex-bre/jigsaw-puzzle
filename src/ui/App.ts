@@ -6,7 +6,8 @@ import { currentLanguage, detectLanguage, formatDuration, setLanguage, t } from 
 import { SoundEffects } from '../platform/audio';
 import { appReady, exitApp, onBackButton, onPause, vibrate } from '../platform/device';
 import { BACKGROUNDS, type Settings } from '../settings';
-import { h, icon, nextFrame } from './dom';
+import { h, nextFrame } from './dom';
+import { button, fillDialog, toolButton } from './kit';
 import { loadPhoto } from './loadPhoto';
 import { navigate, onRouteChange, parentRoute, parseRoute, type Route } from './router';
 import type { ConfirmOptions, PictureRef, ScreenContext } from './screens/context';
@@ -410,60 +411,47 @@ export class App {
     const topbar = h(
       'header',
       { class: 'topbar' },
-      h(
-        'button',
-        { class: 'btn', type: 'button', onclick: () => navigate({ name: 'home' }) },
-        icon('home'),
-        h('span', {}, t('menu')),
-      ),
+      button({
+        label: t('menu'),
+        icon: 'home',
+        size: 'sm',
+        onClick: () => navigate({ name: 'home' }),
+      }),
       this.progressEl,
-      h(
-        'button',
-        { class: 'btn', type: 'button', onclick: () => this.game.fitView() },
-        icon('fit'),
-        h('span', {}, t('fitView')),
-      ),
+      button({
+        label: t('fitView'),
+        icon: 'fit',
+        size: 'sm',
+        onClick: () => this.game.fitView(),
+      }),
     );
-    const toggle = (
+    const helperToggle = (
       key: keyof typeof this.helpers,
       iconName: 'eye' | 'edges',
       label: string,
       hint: string,
-    ) => {
-      const btn = h(
-        'button',
-        {
-          class: 'tool-btn',
-          type: 'button',
-          title: hint,
-          'aria-pressed': String(this.helpers[key]),
+    ) =>
+      toolButton({
+        icon: iconName,
+        label,
+        title: hint,
+        pressed: this.helpers[key],
+        onToggle: (on) => {
+          this.helpers[key] = on;
+          this.game.setHelperOptions(this.helpers);
         },
-        icon(iconName),
-        h('span', {}, label),
-      );
-      btn.addEventListener('click', () => {
-        this.helpers[key] = !this.helpers[key];
-        btn.setAttribute('aria-pressed', String(this.helpers[key]));
-        this.game.setHelperOptions(this.helpers);
       });
-      return btn;
-    };
     const toolbar = h(
       'nav',
       { class: 'toolbar' },
-      toggle('ghost', 'eye', t('ghost'), t('ghostHint')),
-      toggle('edgesOnly', 'edges', t('edges'), t('edgesHint')),
-      h(
-        'button',
-        {
-          class: 'tool-btn',
-          type: 'button',
-          title: t('sortHint'),
-          onclick: () => this.game.sortTray(),
-        },
-        icon('sort'),
-        h('span', {}, t('sort')),
-      ),
+      helperToggle('ghost', 'eye', t('ghost'), t('ghostHint')),
+      helperToggle('edgesOnly', 'edges', t('edges'), t('edgesHint')),
+      toolButton({
+        icon: 'sort',
+        label: t('sort'),
+        title: t('sortHint'),
+        onClick: () => this.game.sortTray(),
+      }),
     );
     this.topbar.replaceWith(topbar);
     this.toolbar.replaceWith(toolbar);
@@ -479,51 +467,40 @@ export class App {
     newBest: boolean,
   ): void {
     const next = this.nextPicture(pictureId);
-    this.doneDialog.replaceChildren(
-      h('div', { class: 'done-badge' }, icon('check')),
-      h('h2', {}, t('wellDone')),
-      h(
-        'p',
-        { class: 'lead' },
-        t('finishedIn', { n: pieceCount, time: formatDuration(elapsedMs) }),
-      ),
-      ...(newBest ? [h('p', { class: 'new-best' }, t('newBest'))] : []),
-      h(
-        'div',
-        { class: 'dialog-actions stacked' },
-        next
-          ? h(
-              'button',
-              {
-                class: 'btn btn-primary',
-                type: 'button',
-                onclick: () => navigate({ name: 'setup', imageId: next.id }),
-              },
-              icon('next'),
-              h('span', {}, t('nextPicture')),
-            )
-          : null,
-        h(
-          'button',
-          {
-            class: 'btn',
-            type: 'button',
-            onclick: () => {
-              this.doneDialog.close();
-              this.game.fitView();
-            },
+    fillDialog(this.doneDialog, {
+      icon: 'check',
+      title: t('wellDone'),
+      text: t('finishedIn', { n: pieceCount, time: formatDuration(elapsedMs) }),
+      extra: newBest ? [h('p', { class: 'new-best' }, t('newBest'))] : [],
+      actions: [
+        ...(next
+          ? [
+              button({
+                label: t('nextPicture'),
+                icon: 'next',
+                tone: 'primary',
+                block: true,
+                onClick: () => navigate({ name: 'setup', imageId: next.id }),
+              }),
+            ]
+          : []),
+        button({
+          label: t('lookAtPicture'),
+          icon: 'image',
+          block: true,
+          onClick: () => {
+            this.doneDialog.close();
+            this.game.fitView();
           },
-          icon('image'),
-          h('span', {}, t('lookAtPicture')),
-        ),
-        h(
-          'button',
-          { class: 'btn', type: 'button', onclick: () => navigate({ name: 'home' }) },
-          icon('home'),
-          h('span', {}, t('backToMenu')),
-        ),
-      ),
-    );
+        }),
+        button({
+          label: t('backToMenu'),
+          icon: 'home',
+          block: true,
+          onClick: () => navigate({ name: 'home' }),
+        }),
+      ],
+    });
     // Give the final snap animation a moment before the dialog appears.
     setTimeout(() => {
       if (this.route.name === 'play' && !this.doneDialog.open) this.doneDialog.showModal();
@@ -540,28 +517,19 @@ export class App {
         resolve(answer);
       };
       const onClose = () => done(false);
-      dialog.replaceChildren(
-        h('h2', {}, options.title),
-        h('p', { class: 'lead' }, options.text),
-        h(
-          'div',
-          { class: 'dialog-actions stacked' },
-          h(
-            'button',
-            {
-              class: options.danger ? 'btn btn-danger' : 'btn btn-primary',
-              type: 'button',
-              onclick: () => done(true),
-            },
-            h('span', {}, options.confirmLabel),
-          ),
-          h(
-            'button',
-            { class: 'btn', type: 'button', onclick: () => done(false) },
-            h('span', {}, t('cancel')),
-          ),
-        ),
-      );
+      fillDialog(dialog, {
+        title: options.title,
+        text: options.text,
+        actions: [
+          button({
+            label: options.confirmLabel,
+            tone: options.danger ? 'danger' : 'primary',
+            block: true,
+            onClick: () => done(true),
+          }),
+          button({ label: t('cancel'), block: true, onClick: () => done(false) }),
+        ],
+      });
       dialog.addEventListener('close', onClose);
       dialog.showModal();
     });

@@ -70,6 +70,7 @@ keyPassword=…
 - `src/game/render/` – Pixi rendering: piece texture atlas, puzzle view (board), tray view, camera, pointer input.
 - `src/game/GameController.ts` – connects core, rendering and input; renders only on demand.
 - `src/ui/` – HTML/CSS user interface: hash router, menu screens (`screens/`), game chrome and dialogs.
+- `src/ui/kit/` – reusable UI kit, independent of the jigsaw game: design tokens, the bundled Atkinson Hyperlegible font and builders for buttons, choice groups, number tiles, toolbar buttons, cards, badges and dialogs. Every tappable thing stands on a solid ledge and sinks into it when pressed. Screens build components with these helpers (`button({ label, icon, tone: 'primary' })`) rather than by hand; `src/styles.css` only holds the app's layout.
 - `src/content/` – picture catalogue (generated `catalog.json` + helpers).
 - `src/settings.ts` – player settings (language, sound, vibration, background).
 - `src/data/repository.ts` – everything kept on the device: puzzles in progress, best times, own photos, settings.

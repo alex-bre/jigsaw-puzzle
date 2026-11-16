@@ -1,4 +1,3 @@
-import { createStore, del, get, set, type UseStore } from 'idb-keyval';
 import { isNative } from './native';
 
 /**
@@ -14,23 +13,71 @@ export interface AppStorage {
   remove(key: string): Promise<void>;
 }
 
+/**
+ * Key-value store in one IndexedDB object store, with keys kept apart from the values
+ * ("out-of-line"). Database and store names match what the app used before (idb-keyval), so
+ * data saved by earlier versions is read as-is.
+ */
 export class IndexedDbStorage implements AppStorage {
-  private readonly store: UseStore;
+  private db: Promise<IDBDatabase> | null = null;
 
-  constructor(dbName = 'jigsaw-puzzle', storeName = 'data') {
-    this.store = createStore(dbName, storeName);
-  }
+  constructor(
+    private readonly dbName = 'jigsaw-puzzle',
+    private readonly storeName = 'data',
+  ) {}
 
   get<T>(key: string): Promise<T | undefined> {
-    return get<T>(key, this.store);
+    return this.request<T | undefined>('readonly', (store) => store.get(key));
   }
 
-  set(key: string, value: unknown): Promise<void> {
-    return set(key, value, this.store);
+  async set(key: string, value: unknown): Promise<void> {
+    await this.request('readwrite', (store) => store.put(value, key));
   }
 
-  remove(key: string): Promise<void> {
-    return del(key, this.store);
+  async remove(key: string): Promise<void> {
+    await this.request('readwrite', (store) => store.delete(key));
+  }
+
+  /** Opens the database once and reuses the connection; reopens it if the browser closed it. */
+  private open(): Promise<IDBDatabase> {
+    if (!this.db) {
+      const opening = new Promise<IDBDatabase>((resolve, reject) => {
+        const req = indexedDB.open(this.dbName);
+        req.onupgradeneeded = () => req.result.createObjectStore(this.storeName);
+        req.onsuccess = () => {
+          const db = req.result;
+          db.onclose = () => (this.db = null);
+          db.onversionchange = () => {
+            db.close();
+            this.db = null;
+          };
+          resolve(db);
+        };
+        req.onerror = () => reject(req.error);
+      });
+      // A failed open must not be cached; the next call tries again.
+      opening.catch(() => (this.db = null));
+      this.db = opening;
+    }
+    return this.db;
+  }
+
+  /**
+   * Runs one request in its own transaction and resolves once the transaction has completed,
+   * i.e. a write is only reported as done when it is actually stored.
+   */
+  private async request<T>(
+    mode: IDBTransactionMode,
+    action: (store: IDBObjectStore) => IDBRequest,
+  ): Promise<T> {
+    const db = await this.open();
+    return new Promise<T>((resolve, reject) => {
+      const tx = db.transaction(this.storeName, mode);
+      const req = action(tx.objectStore(this.storeName));
+      tx.oncomplete = () => resolve(req.result as T);
+      tx.onerror = () => reject(tx.error ?? req.error);
+      tx.onabort = () => reject(tx.error ?? new Error('IndexedDB transaction aborted'));
+    });
   }
 }
 

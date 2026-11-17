@@ -24,6 +24,7 @@ npm test           # unit tests (Vitest)
 npm run lint       # ESLint
 npm run typecheck  # TypeScript
 npm run build      # production build into dist/
+npm run notices    # regenerate THIRD-PARTY-NOTICES after changing dependencies
 ```
 
 ## Pictures
@@ -120,3 +121,5 @@ The licence covers the code. The other parts that ship with the app keep their o
 - **Pictures** in `public/images/`: CC0 or public domain, each listed with author and source in [content/images.json](content/images.json) and on the Credits screen.
 - **Font**: Atkinson Hyperlegible, SIL Open Font License 1.1.
 - **Libraries**: PixiJS, Capacitor and the rest are MIT, BSD or ISC licensed.
+
+The app shows all of this under _Settings → About this app_: version, copyright, the licence notice, a link to the source code, the full AGPL text and [THIRD-PARTY-NOTICES](THIRD-PARTY-NOTICES), which lists every bundled npm package with its licence text. The build ships both texts as `LICENSE.txt` and `THIRD-PARTY-NOTICES.txt` next to `index.html` (`vite.config.ts`). Run `npm run notices` after any dependency change; the Tests workflow fails when the file is stale. The AndroidX libraries that Gradle adds to the APK are not listed yet.

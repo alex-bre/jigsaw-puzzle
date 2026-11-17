@@ -14,7 +14,7 @@ import type { ConfirmOptions, PictureRef, ScreenContext } from './screens/contex
 import { homeScreen } from './screens/home';
 import { categoryScreen, picturesScreen } from './screens/pictures';
 import { puzzlesScreen } from './screens/puzzles';
-import { creditsScreen, settingsScreen } from './screens/settings';
+import { aboutScreen, creditsScreen, settingsScreen } from './screens/settings';
 import { setupScreen } from './screens/setup';
 
 /** Autosave this long after the last change (and always when leaving the game or the app). */
@@ -148,7 +148,9 @@ export class App {
                 ? settingsScreen(ctx)
                 : route.name === 'credits'
                   ? creditsScreen(ctx)
-                  : homeScreen(ctx);
+                  : route.name === 'about'
+                    ? aboutScreen(ctx)
+                    : homeScreen(ctx);
     this.screens.replaceChildren(el);
   }
 

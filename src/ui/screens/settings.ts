@@ -3,7 +3,11 @@ import { currentLanguage, t, type MessageKey } from '../../i18n';
 import { BACKGROUNDS, type Background, type LanguageSetting } from '../../settings';
 import { h } from '../dom';
 import { button, choiceGroup } from '../kit';
+import { reflow } from '../reflow';
 import { screen, screenHeader, type ScreenContext } from './context';
+
+/** First publication year, for the copyright line on the About screen. */
+const COPYRIGHT_YEARS = '2026';
 
 export function settingsScreen(ctx: ScreenContext): HTMLElement {
   const s = ctx.settings;
@@ -52,12 +56,77 @@ export function settingsScreen(ctx: ScreenContext): HTMLElement {
     }),
     button({
       label: t('credits'),
-      icon: 'info',
+      icon: 'image',
       size: 'lg',
       block: true,
       onClick: () => ctx.go({ name: 'credits' }),
     }),
+    button({
+      label: t('about'),
+      icon: 'info',
+      size: 'lg',
+      block: true,
+      onClick: () => ctx.go({ name: 'about' }),
+    }),
   );
+}
+
+/**
+ * Version, copyright, licence and source link, plus the full licence texts. The AGPL asks an
+ * interactive program to show these, and the dependencies' licences ask for their notices to
+ * travel with the app. The texts are files shipped next to index.html (see vite.config.ts), loaded
+ * only when opened.
+ */
+export function aboutScreen(ctx: ScreenContext): HTMLElement {
+  return screen(
+    screenHeader(ctx, t('about')),
+    h(
+      'div',
+      { class: 'about' },
+      h('strong', {}, t('appTitle')),
+      h('div', {}, t('appVersion', { version: __APP_VERSION__ })),
+      h('div', {}, `© ${COPYRIGHT_YEARS} ${__APP_AUTHOR__}`),
+    ),
+    h('p', { class: 'lead-text' }, t('aboutLicence')),
+    h(
+      'p',
+      { class: 'about-link' },
+      h('a', { href: __SOURCE_URL__, target: '_blank', rel: 'noopener' }, t('sourceCode')),
+    ),
+    shippedText(t('licenceText'), 'LICENSE.txt'),
+    shippedText(t('thirdPartyNotices'), 'THIRD-PARTY-NOTICES.txt', t('thirdPartyIntro')),
+  );
+}
+
+/** A collapsed section that fetches and shows one of the shipped text files when opened. */
+function shippedText(title: string, file: string, intro?: string): HTMLElement {
+  const body = h('div', { class: 'licence-text' });
+  let loaded = false;
+  const section = h(
+    'details',
+    { class: 'licence' },
+    h('summary', {}, title),
+    intro ? h('p', { class: 'muted' }, intro) : null,
+    body,
+  );
+  section.addEventListener('toggle', () => {
+    if (!section.open || loaded) return;
+    loaded = true;
+    body.textContent = t('textLoading');
+    fetch(`./${file}`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`${file}: HTTP ${res.status}`);
+        return res.text();
+      })
+      .then((text) => {
+        body.textContent = reflow(text);
+      })
+      .catch(() => {
+        body.textContent = t('textLoadError');
+        loaded = false;
+      });
+  });
+  return section;
 }
 
 export function creditsScreen(ctx: ScreenContext): HTMLElement {

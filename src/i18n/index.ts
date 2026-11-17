@@ -45,8 +45,18 @@ const en = {
     'All pictures may be used freely (public domain or CC0). Many thanks to the photographers, artists and museums who shared them.',
   creditBy: 'by {author}',
   creditSource: 'Source',
-  softwareCredits:
-    'This app uses PixiJS (MIT licence) and the font Atkinson Hyperlegible by the Braille Institute (SIL Open Font License 1.1).',
+  softwareCredits: 'The software this app is built with is listed under Settings → About this app.',
+  about: 'About this app',
+  appVersion: 'Version {version}',
+  aboutLicence:
+    'This app is free software: you may use, share and change it under the terms of the GNU Affero General Public License, version 3. It comes with no warranty.',
+  sourceCode: 'Source code',
+  licenceText: 'Licence text (GNU AGPL 3.0)',
+  thirdPartyNotices: 'Open-source components',
+  thirdPartyIntro:
+    'This app is built with the following open-source components. Their licences ask for these notices to be shown.',
+  textLoading: 'Loading…',
+  textLoadError: 'This text could not be loaded.',
   myPuzzles: 'My puzzles',
   myPuzzlesCount: 'My puzzles ({n})',
   noPuzzles: 'No puzzles in progress. Choose a picture to start one.',
@@ -119,7 +129,18 @@ const de: Record<MessageKey, string> = {
   creditBy: 'von {author}',
   creditSource: 'Quelle',
   softwareCredits:
-    'Diese App verwendet PixiJS (MIT-Lizenz) und die Schrift Atkinson Hyperlegible des Braille Institute (SIL Open Font License 1.1).',
+    'Die Software, mit der diese App gebaut ist, steht unter Einstellungen → Über diese App.',
+  about: 'Über diese App',
+  appVersion: 'Version {version}',
+  aboutLicence:
+    'Diese App ist freie Software: Sie dürfen sie unter den Bedingungen der GNU Affero General Public License, Version 3, verwenden, weitergeben und verändern. Sie wird ohne jede Gewährleistung bereitgestellt.',
+  sourceCode: 'Quellcode',
+  licenceText: 'Lizenztext (GNU AGPL 3.0)',
+  thirdPartyNotices: 'Open-Source-Komponenten',
+  thirdPartyIntro:
+    'Diese App ist mit den folgenden Open-Source-Komponenten gebaut. Deren Lizenzen verlangen, dass diese Hinweise angezeigt werden.',
+  textLoading: 'Wird geladen …',
+  textLoadError: 'Dieser Text konnte nicht geladen werden.',
   myPuzzles: 'Meine Puzzles',
   myPuzzlesCount: 'Meine Puzzles ({n})',
   noPuzzles: 'Noch keine angefangenen Puzzles. Wählen Sie ein Bild, um eines zu beginnen.',

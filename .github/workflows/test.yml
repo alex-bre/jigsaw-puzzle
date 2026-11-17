@@ -25,3 +25,9 @@ jobs:
       - name: Formatting
         run: npx prettier --check .
       - run: npm test
+      # The notices ship inside every build, so a dependency change that forgot
+      # `npm run notices` would ship a stale list.
+      - name: Third-party notices are current
+        run: |
+          npm run notices
+          git diff --exit-code THIRD-PARTY-NOTICES

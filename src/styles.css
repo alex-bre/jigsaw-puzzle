@@ -343,6 +343,52 @@ body {
   color: var(--primary);
 }
 
+/* About */
+.about {
+  display: grid;
+  gap: 4px;
+  margin: 8px 0 16px;
+  font-size: var(--text-base);
+}
+
+.about strong {
+  font-size: var(--text-lg);
+}
+
+.about-link a {
+  color: var(--primary);
+  font-size: var(--text-base);
+}
+
+.licence {
+  margin: 12px 0;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+}
+
+.licence summary {
+  min-height: 56px;
+  padding: 14px 16px;
+  font-size: var(--text-base);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.licence > p {
+  margin: 0 16px 12px;
+}
+
+/* Reflowed plain text (src/ui/reflow.ts): line breaks are meaningful, long URLs may wrap. */
+.licence-text {
+  padding: 0 16px 16px;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--text);
+}
+
 /* ---- Loading ---- */
 .loading {
   position: fixed;

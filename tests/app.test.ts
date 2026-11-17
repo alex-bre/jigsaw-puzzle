@@ -3,6 +3,7 @@ import { parentRoute, parseRoute, routeToHash, type Route } from '../src/ui/rout
 import { DEFAULT_SETTINGS, sanitize } from '../src/settings';
 import { catalog as catalogData } from '../src/content/catalog';
 import manifest from '../content/images.json';
+import { reflow } from '../src/ui/reflow';
 
 describe('router', () => {
   const routes: Route[] = [
@@ -13,6 +14,7 @@ describe('router', () => {
     { name: 'play' },
     { name: 'settings' },
     { name: 'credits' },
+    { name: 'about' },
   ];
 
   it('round-trips every route through the URL hash', () => {
@@ -31,6 +33,7 @@ describe('router', () => {
     expect(parentRoute(fromCategory, fromCategory)).toEqual({ name: 'pictures' });
     expect(parentRoute({ name: 'setup', imageId: 'x' }, fromCategory)).toEqual(fromCategory);
     expect(parentRoute({ name: 'credits' }, fromCategory)).toEqual({ name: 'settings' });
+    expect(parentRoute({ name: 'about' }, fromCategory)).toEqual({ name: 'settings' });
     expect(parentRoute({ name: 'settings' }, fromCategory)).toEqual({ name: 'home' });
   });
 });
@@ -77,5 +80,38 @@ describe('picture catalogue', () => {
       expect(Math.max(img.width, img.height)).toBeLessThanOrEqual(2048);
       expect(img.width).toBeGreaterThan(img.height); // landscape format for phones & tablets
     }
+  });
+});
+
+describe('licence text reflow', () => {
+  it('joins hard-wrapped lines into paragraphs', () => {
+    const text =
+      'Permission is hereby granted, free of charge, to any person obtaining a copy\n' +
+      'of this software and associated documentation files (the "Software"), to deal\n' +
+      'in the Software without restriction.\n' +
+      '\n' +
+      'Next paragraph.';
+    expect(reflow(text)).toBe(
+      'Permission is hereby granted, free of charge, to any person obtaining a copy of this ' +
+        'software and associated documentation files (the "Software"), to deal in the Software ' +
+        'without restriction.\n\nNext paragraph.',
+    );
+  });
+
+  it('keeps short lines, list items and turns rules into breaks', () => {
+    const rule = '-'.repeat(78);
+    const text =
+      `${rule}\npixi.js 8.22.0\nLicence: MIT\n${rule}\n\nMIT License\n\n` +
+      'Copyright (c) 2013-2023 Mathew Groves, Chad Engler\n\n' +
+      'Redistribution and use in source and binary forms, with or without modification,\n' +
+      '1. Redistributions of source code must retain the above copyright notice, this\n' +
+      '   list of conditions and the following disclaimer.\n';
+    expect(reflow(text)).toBe(
+      'pixi.js 8.22.0\nLicence: MIT\n\nMIT License\n\n' +
+        'Copyright (c) 2013-2023 Mathew Groves, Chad Engler\n\n' +
+        'Redistribution and use in source and binary forms, with or without modification,\n' +
+        '1. Redistributions of source code must retain the above copyright notice, this\n' +
+        '   list of conditions and the following disclaimer.',
+    );
   });
 });

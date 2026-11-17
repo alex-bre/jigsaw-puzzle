@@ -1,6 +1,19 @@
-# Jigsaw Puzzle
+<p align="center">
+  <img src="assets/icon-only.png" width="120" alt="Jigsaw Puzzle logo">
+</p>
 
-A calm, senior-friendly jigsaw puzzle game. PixiJS v8 + TypeScript + Vite, packaged for Android with Capacitor 8. Fully offline, no ads.
+<h1 align="center">Jigsaw Puzzle</h1>
+
+<p align="center">
+  A calm, senior-friendly jigsaw puzzle game.<br>
+  PixiJS v8 + TypeScript + Vite, packaged for Android with Capacitor 8. Fully offline, no ads.
+</p>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/licence-AGPL--3.0--only-blue" alt="Licence: AGPL-3.0-only"></a>
+</p>
+
+---
 
 ## Development
 
@@ -95,3 +108,15 @@ The changelog is built from conventional-commit subjects since the previous `v*`
 - `src/platform/` – device features: storage (IndexedDB on the web, files on Android), haptics, back button and app lifecycle, photo picker/camera, synthesized sound effects.
 - `android/` – Capacitor Android project; `capacitor.config.ts` – app id, splash screen and system bar settings; `assets/` – app icon and splash sources.
 - `src/i18n/` – German/English texts; language follows the system language.
+
+## Licence
+
+**GNU Affero General Public License v3.0 only**: see [LICENSE](LICENSE).
+
+Anyone may use, change and redistribute the game, including selling it, as long as they pass it on under the same licence with its source. §13 adds that a modified version offered to people _over a network_ (such as a hosted web build) has to offer those users its source too.
+
+The licence covers the code. The other parts that ship with the app keep their own terms:
+
+- **Pictures** in `public/images/`: CC0 or public domain, each listed with author and source in [content/images.json](content/images.json) and on the Credits screen.
+- **Font**: Atkinson Hyperlegible, SIL Open Font License 1.1.
+- **Libraries**: PixiJS, Capacitor and the rest are MIT, BSD or ISC licensed.

@@ -1,5 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { defineConfig, type Plugin } from 'vitest/config';
+import {
+  imprint,
+  legalPageHtml,
+  missingOperatorFields,
+  privacyPolicy,
+} from './src/content/legal.ts';
 
 const read = (file: string): string => readFileSync(new URL(`./${file}`, import.meta.url), 'utf8');
 
@@ -44,8 +50,38 @@ function shipLicenceTexts(): Plugin {
   };
 }
 
+/**
+ * Static privacy.html and imprint.html next to index.html, from src/content/legal.ts: the Play
+ * Console needs a plain URL for the privacy policy, and the website should name its operator.
+ * Reminds about Impressum fields that are still empty, without failing the build.
+ */
+function legalPages(): Plugin {
+  return {
+    name: 'legal-pages',
+    apply: 'build',
+    generateBundle() {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'privacy.html',
+        source: legalPageHtml(privacyPolicy('de'), privacyPolicy('en'), 'Jigsaw Puzzle'),
+      });
+      this.emitFile({
+        type: 'asset',
+        fileName: 'imprint.html',
+        source: legalPageHtml(imprint('de'), imprint('en'), 'Jigsaw Puzzle'),
+      });
+      const missing = missingOperatorFields();
+      if (missing.length) {
+        this.warn(
+          `Impressum has no ${missing.join(', ')} yet: § 5 DDG asks for them once the app is sold (OPERATOR in src/content/legal.ts).`,
+        );
+      }
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [shipLicenceTexts()],
+  plugins: [shipLicenceTexts(), legalPages()],
   // Relative base so the build also works inside the Capacitor WebView.
   base: './',
   define: {

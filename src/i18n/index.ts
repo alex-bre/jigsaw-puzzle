@@ -56,6 +56,8 @@ const en = {
   thirdPartyIntro:
     'This app is built with the following open-source components. Their licences ask for these notices to be shown.',
   textLoading: 'Loading…',
+  privacy: 'Privacy policy',
+  imprint: 'Legal notice',
   textLoadError: 'This text could not be loaded.',
   myPuzzles: 'My puzzles',
   myPuzzlesCount: 'My puzzles ({n})',
@@ -140,6 +142,8 @@ const de: Record<MessageKey, string> = {
   thirdPartyIntro:
     'Diese App ist mit den folgenden Open-Source-Komponenten gebaut. Deren Lizenzen verlangen, dass diese Hinweise angezeigt werden.',
   textLoading: 'Wird geladen …',
+  privacy: 'Datenschutz',
+  imprint: 'Impressum',
   textLoadError: 'Dieser Text konnte nicht geladen werden.',
   myPuzzles: 'Meine Puzzles',
   myPuzzlesCount: 'Meine Puzzles ({n})',

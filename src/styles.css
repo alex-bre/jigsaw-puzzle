@@ -343,6 +343,46 @@ body {
   color: var(--primary);
 }
 
+/* Settings: the links below the choices */
+.settings-links {
+  display: grid;
+  gap: var(--gap);
+  margin-top: 32px;
+}
+
+.settings-links-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap);
+}
+
+.settings-links-row .btn {
+  flex: 1 1 140px;
+}
+
+/* Privacy policy, Impressum */
+.legal {
+  max-width: 720px;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.legal h2 {
+  margin: 24px 0 8px;
+  font-size: var(--text-md);
+  line-height: 1.25;
+}
+
+.legal p {
+  margin: 0 0 12px;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.legal a {
+  color: var(--primary);
+}
+
 /* About */
 .about {
   display: grid;

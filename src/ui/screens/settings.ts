@@ -54,20 +54,30 @@ export function settingsScreen(ctx: ScreenContext): HTMLElement {
       selected: s.background,
       onSelect: (background) => ctx.updateSettings({ background }),
     }),
-    button({
-      label: t('credits'),
-      icon: 'image',
-      size: 'lg',
-      block: true,
-      onClick: () => ctx.go({ name: 'credits' }),
-    }),
-    button({
-      label: t('about'),
-      icon: 'info',
-      size: 'lg',
-      block: true,
-      onClick: () => ctx.go({ name: 'about' }),
-    }),
+    h(
+      'div',
+      { class: 'settings-links' },
+      button({
+        label: t('credits'),
+        icon: 'image',
+        size: 'lg',
+        block: true,
+        onClick: () => ctx.go({ name: 'credits' }),
+      }),
+      button({
+        label: t('about'),
+        icon: 'info',
+        size: 'lg',
+        block: true,
+        onClick: () => ctx.go({ name: 'about' }),
+      }),
+      h(
+        'div',
+        { class: 'settings-links-row' },
+        button({ label: t('privacy'), onClick: () => ctx.go({ name: 'privacy' }) }),
+        button({ label: t('imprint'), onClick: () => ctx.go({ name: 'imprint' }) }),
+      ),
+    ),
   );
 }
 

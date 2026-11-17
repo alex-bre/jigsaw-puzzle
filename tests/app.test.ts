@@ -4,6 +4,14 @@ import { DEFAULT_SETTINGS, sanitize } from '../src/settings';
 import { catalog as catalogData } from '../src/content/catalog';
 import manifest from '../content/images.json';
 import { reflow } from '../src/ui/reflow';
+import {
+  imprint,
+  legalPageHtml,
+  linkParts,
+  missingOperatorFields,
+  privacyPolicy,
+  type Operator,
+} from '../src/content/legal';
 
 describe('router', () => {
   const routes: Route[] = [
@@ -15,6 +23,8 @@ describe('router', () => {
     { name: 'settings' },
     { name: 'credits' },
     { name: 'about' },
+    { name: 'privacy' },
+    { name: 'imprint' },
   ];
 
   it('round-trips every route through the URL hash', () => {
@@ -34,6 +44,7 @@ describe('router', () => {
     expect(parentRoute({ name: 'setup', imageId: 'x' }, fromCategory)).toEqual(fromCategory);
     expect(parentRoute({ name: 'credits' }, fromCategory)).toEqual({ name: 'settings' });
     expect(parentRoute({ name: 'about' }, fromCategory)).toEqual({ name: 'settings' });
+    expect(parentRoute({ name: 'privacy' }, fromCategory)).toEqual({ name: 'settings' });
     expect(parentRoute({ name: 'settings' }, fromCategory)).toEqual({ name: 'home' });
   });
 });
@@ -113,5 +124,68 @@ describe('licence text reflow', () => {
         '1. Redistributions of source code must retain the above copyright notice, this\n' +
         '   list of conditions and the following disclaimer.',
     );
+  });
+});
+
+describe('privacy policy and Impressum', () => {
+  const filled: Operator = {
+    name: 'Erika Mustermann',
+    address: ['Musterstraße 1', '12345 Musterstadt'],
+    email: 'erika@example.org',
+    phone: '+49 30 1234567',
+  };
+
+  it('has the same sections in both languages', () => {
+    const count = (lang: 'de' | 'en') => privacyPolicy(lang, filled).sections.length;
+    expect(count('de')).toBe(count('en'));
+  });
+
+  it('names the controller with full contact details', () => {
+    const controller = privacyPolicy('de', filled).sections[1].paragraphs.join('\n');
+    for (const part of [filled.name, ...filled.address, filled.email, filled.phone]) {
+      expect(controller).toContain(part);
+    }
+  });
+
+  it('shows the filled-in Impressum fields and leaves out the empty ones', () => {
+    expect(missingOperatorFields(filled)).toEqual([]);
+    expect(imprint('de', filled).sections[0].paragraphs[0]).toBe(
+      'Erika Mustermann\nMusterstraße 1\n12345 Musterstadt\nE-Mail: erika@example.org\nTelefon: +49 30 1234567',
+    );
+    const emailOnly: Operator = {
+      name: 'Erika Mustermann',
+      address: [''],
+      email: 'e@x.org',
+      phone: '',
+    };
+    expect(missingOperatorFields(emailOnly)).toEqual(['address', 'phone']);
+    expect(imprint('en', emailOnly).sections[0].paragraphs[0]).toBe(
+      'Erika Mustermann\nEmail: e@x.org',
+    );
+  });
+
+  it('has the same Impressum sections in both languages', () => {
+    expect(imprint('de', filled).sections.length).toBe(imprint('en', filled).sections.length);
+  });
+
+  it('turns URLs and email addresses into links, without trailing punctuation', () => {
+    expect(linkParts('See https://example.org/a. Or mail erika@example.org')).toEqual([
+      { text: 'See ' },
+      { text: 'https://example.org/a', href: 'https://example.org/a' },
+      { text: '. Or mail ' },
+      { text: 'erika@example.org', href: 'mailto:erika@example.org' },
+    ]);
+  });
+
+  it('renders a static page with both languages and escaped text', () => {
+    const html = legalPageHtml(
+      privacyPolicy('de', { ...filled, name: 'A <b>' }),
+      privacyPolicy('en', filled),
+      'Jigsaw Puzzle',
+    );
+    expect(html).toContain('<article lang="de" id="de">');
+    expect(html).toContain('<article lang="en" id="en">');
+    expect(html).toContain('A &lt;b&gt;');
+    expect(html).not.toContain('<script');
   });
 });

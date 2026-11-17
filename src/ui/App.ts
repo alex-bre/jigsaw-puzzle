@@ -1,4 +1,5 @@
 import { findImage, imageUrl, imagesIn, loadCatalogImage, thumbUrl } from '../content/catalog';
+import { imprint, privacyPolicy } from '../content/legal';
 import type { PhotoMeta, Repository, SaveMeta, Stats } from '../data/repository';
 import { GameController } from '../game/GameController';
 import type { SourceImage } from '../game/render/PieceFactory';
@@ -14,6 +15,7 @@ import type { ConfirmOptions, PictureRef, ScreenContext } from './screens/contex
 import { homeScreen } from './screens/home';
 import { categoryScreen, picturesScreen } from './screens/pictures';
 import { puzzlesScreen } from './screens/puzzles';
+import { legalScreen } from './screens/legal';
 import { aboutScreen, creditsScreen, settingsScreen } from './screens/settings';
 import { setupScreen } from './screens/setup';
 
@@ -134,24 +136,33 @@ export class App {
   private renderScreen(): void {
     const route = this.route;
     if (route.name === 'play') return;
+    this.screens.replaceChildren(this.screenFor(route));
+  }
+
+  private screenFor(route: Exclude<Route, { name: 'play' }>): HTMLElement {
     const ctx = this.context();
-    const el =
-      route.name === 'pictures'
-        ? picturesScreen(ctx)
-        : route.name === 'category'
-          ? categoryScreen(ctx, route.categoryId)
-          : route.name === 'setup'
-            ? setupScreen(ctx, route.imageId)
-            : route.name === 'puzzles'
-              ? puzzlesScreen(ctx)
-              : route.name === 'settings'
-                ? settingsScreen(ctx)
-                : route.name === 'credits'
-                  ? creditsScreen(ctx)
-                  : route.name === 'about'
-                    ? aboutScreen(ctx)
-                    : homeScreen(ctx);
-    this.screens.replaceChildren(el);
+    switch (route.name) {
+      case 'pictures':
+        return picturesScreen(ctx);
+      case 'category':
+        return categoryScreen(ctx, route.categoryId);
+      case 'setup':
+        return setupScreen(ctx, route.imageId);
+      case 'puzzles':
+        return puzzlesScreen(ctx);
+      case 'settings':
+        return settingsScreen(ctx);
+      case 'credits':
+        return creditsScreen(ctx);
+      case 'about':
+        return aboutScreen(ctx);
+      case 'privacy':
+        return legalScreen(ctx, t('privacy'), privacyPolicy(currentLanguage()));
+      case 'imprint':
+        return legalScreen(ctx, t('imprint'), imprint(currentLanguage()));
+      case 'home':
+        return homeScreen(ctx);
+    }
   }
 
   private context(): ScreenContext {

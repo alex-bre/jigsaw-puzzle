@@ -11,7 +11,9 @@ export type Route =
   | { name: 'puzzles' }
   | { name: 'settings' }
   | { name: 'credits' }
-  | { name: 'about' };
+  | { name: 'about' }
+  | { name: 'privacy' }
+  | { name: 'imprint' };
 
 export function parseRoute(hash: string): Route {
   const parts = hash.replace(/^#\/?/, '').split('/').filter(Boolean).map(decodeURIComponent);
@@ -30,6 +32,10 @@ export function parseRoute(hash: string): Route {
       return { name: 'credits' };
     case 'about':
       return { name: 'about' };
+    case 'privacy':
+      return { name: 'privacy' };
+    case 'imprint':
+      return { name: 'imprint' };
     default:
       return { name: 'home' };
   }
@@ -61,6 +67,8 @@ export function parentRoute(route: Route, setupParent: Route): Route | null {
       return setupParent;
     case 'credits':
     case 'about':
+    case 'privacy':
+    case 'imprint':
       return { name: 'settings' };
     default:
       return { name: 'home' };

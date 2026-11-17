@@ -110,6 +110,12 @@ The changelog is built from conventional-commit subjects since the previous `v*`
 - `android/` – Capacitor Android project; `capacitor.config.ts` – app id, splash screen and system bar settings; `assets/` – app icon and splash sources.
 - `src/i18n/` – German/English texts; language follows the system language.
 
+## Privacy policy and Impressum
+
+Both texts, in German and English, live in [src/content/legal.ts](src/content/legal.ts). The app shows them under _Settings_, and the build also writes them as static pages next to `index.html`: `privacy.html` (the link for the Play Console, e.g. `https://alex-bre.github.io/jigsaw-puzzle/privacy.html`) and `imprint.html`.
+
+The Impressum shows whatever is filled in under `OPERATOR` in that file; empty fields are left out. Once the app is sold, § 5 DDG asks for a postal address, an email address and a second fast contact (phone), and `npm run build` names any that are still empty. When the app starts storing or sending anything new, update the privacy policy and its `UPDATED` date.
+
 ## Licence
 
 **GNU Affero General Public License v3.0 only**: see [LICENSE](LICENSE).

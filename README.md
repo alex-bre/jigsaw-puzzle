@@ -64,6 +64,24 @@ keyPassword=…
 
 `npm run android:apk` / `android:bundle` sign automatically when this file exists. Without it they produce an unsigned build and print a warning.
 
+## CI and releases
+
+All workflows in `.github/workflows/` start by hand from the Actions tab; nothing runs on a plain push.
+
+- **Tests**: typecheck, lint, Prettier check and unit tests on the chosen branch.
+- **Pages**: runs the tests, builds and deploys `dist/` to GitHub Pages. Needs _Settings → Pages → Source: GitHub Actions_ once.
+- **Release**: cuts a release (changelog entry in [CHANGELOG.md](CHANGELOG.md), version bump in `package.json`, commit, `v*` tag, pushed to `main`), then publishes a GitHub release with the changelog entry as notes and the web build as `jigsaw-puzzle-<version>-dist.zip`. Pick `minor` / `patch` / `major`, or `custom` with a version; `custom` with an existing tag (`v0.2.0`) only publishes it. `dry_run` just prints the changelog entry.
+
+Releases can also be cut locally; pushing the tag starts the publish:
+
+```bash
+npm run release -- --minor --dry-run   # preview the changelog entry
+npm run release -- --minor             # or --patch / --major / 0.4.0: commits and tags, pushes nothing
+git push --follow-tags
+```
+
+The changelog is built from conventional-commit subjects since the previous `v*` tag (`feat`, `fix`, `perf`, `revert`, `refactor`, `docs`; `chore`, `ci` and `test` are left out). Since the Android version follows `package.json`, a release also sets the next app's `versionName`/`versionCode`.
+
 ## Structure
 
 - `src/game/core/` – pure puzzle logic (cut geometry, model, snapping, scattering, save format). No Pixi/DOM; unit-tested in `tests/`.

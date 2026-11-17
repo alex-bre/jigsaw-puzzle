@@ -1,0 +1,27 @@
+name: Tests
+
+# Started by hand only (Actions → Tests → Run workflow), on whichever branch is
+# picked there. Pages and Release run the same tests before they publish.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # 24, not 22: the scripts in scripts/ are TypeScript that Node runs
+      # directly, which needs type stripping on by default.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - name: Formatting
+        run: npx prettier --check .
+      - run: npm test

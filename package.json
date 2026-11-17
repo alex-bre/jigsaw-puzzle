@@ -2,6 +2,10 @@
   "name": "jigsaw-puzzle",
   "private": true,
   "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alex-bre/jigsaw-puzzle"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite --host",
@@ -19,7 +23,8 @@
     "android:dev": "cap run android --live-reload --port 5173",
     "android:apk": "node scripts/android-build.ts apk",
     "android:bundle": "node scripts/android-build.ts bundle",
-    "android:icons": "node scripts/app-icons.ts && capacitor-assets generate --android"
+    "android:icons": "node scripts/app-icons.ts && capacitor-assets generate --android",
+    "release": "node scripts/release.ts"
   },
   "dependencies": {
     "@capacitor/android": "^8.6.2",

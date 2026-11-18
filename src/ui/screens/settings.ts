@@ -44,6 +44,13 @@ export function settingsScreen(ctx: ScreenContext): HTMLElement {
       selected: s.vibration,
       onSelect: (vibration) => ctx.updateSettings({ vibration }),
     }),
+    choiceGroup({
+      label: t('zoom'),
+      hint: t('zoomHint'),
+      options: onOff,
+      selected: s.zoom,
+      onSelect: (zoom) => ctx.updateSettings({ zoom }),
+    }),
     choiceGroup<Background>({
       label: t('background'),
       options: (Object.keys(BACKGROUNDS) as Background[]).map((b) => ({

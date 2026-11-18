@@ -8,6 +8,8 @@ export interface Settings {
   sound: boolean;
   vibration: boolean;
   background: Background;
+  /** Pinch / mouse-wheel zoom on the board (helps on small screens). Off: fixed view. */
+  zoom: boolean;
 }
 
 /** Board background colours. Mid-dark tones so that both light and dark pieces stand out. */
@@ -22,6 +24,7 @@ export const DEFAULT_SETTINGS: Settings = {
   sound: true,
   vibration: true,
   background: 'felt',
+  zoom: false,
 };
 
 /** Reads stored settings, falling back to defaults for anything missing or invalid. */
@@ -37,5 +40,6 @@ export function sanitize(data: unknown): Settings {
       d.background === 'wood' || d.background === 'night' || d.background === 'felt'
         ? d.background
         : DEFAULT_SETTINGS.background,
+    zoom: typeof d.zoom === 'boolean' ? d.zoom : DEFAULT_SETTINGS.zoom,
   };
 }

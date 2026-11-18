@@ -254,6 +254,10 @@ body {
   line-height: 1.25;
 }
 
+.field-hint {
+  margin: -6px 0 12px;
+}
+
 .choice-group {
   display: flex;
   flex-wrap: wrap;

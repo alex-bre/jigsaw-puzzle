@@ -56,12 +56,13 @@ describe('settings', () => {
       DEFAULT_SETTINGS,
     );
     expect(
-      sanitize({ language: 'de', sound: false, vibration: false, background: 'wood' }),
+      sanitize({ language: 'de', sound: false, vibration: false, background: 'wood', zoom: true }),
     ).toEqual({
       language: 'de',
       sound: false,
       vibration: false,
       background: 'wood',
+      zoom: true,
     });
   });
 });

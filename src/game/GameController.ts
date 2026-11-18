@@ -2,7 +2,7 @@ import { Application, Container, Ticker } from 'pixi.js';
 import { createCut } from './core/cut';
 import { chooseGrid } from './core/grid';
 import { createPuzzle, isComplete, lockedCount, moveGroup, type PuzzleState } from './core/model';
-import { computePlayArea, contentBounds, type Rect } from './core/playArea';
+import type { Rect } from './core/playArea';
 import { randomSeed } from './core/rng';
 import { deserializePuzzle, serializePuzzle, type PuzzleSave } from './core/serialize';
 import { dropGroup } from './core/snap';
@@ -41,12 +41,17 @@ const SNAP_MIN_SCREEN_PX = 24;
 const TOUCH_SLOP_PX = 14;
 /** A dragged piece's grab point stays at least this far inside the canvas edges. */
 const DRAG_EDGE_MARGIN_PX = 12;
+/** Free border around the board for loose pieces, relative to the piece size … */
+const BOARD_MARGIN_CELLS = 0.5;
+/** … but at most this fraction of the board's longer side, so the board stays large. */
+const BOARD_MARGIN_MAX = 0.06;
 
 interface Drag {
   groupId: number;
   ids: number[];
-  lastX: number;
-  lastY: number;
+  /** Finger position relative to the first piece of the group (world units). */
+  grabX: number;
+  grabY: number;
 }
 
 /** Glues the pure game core to the Pixi rendering and the input handling. */
@@ -181,7 +186,6 @@ export class GameController {
     const cut = createCut(state.cols, state.rows, state.imageWidth, state.imageHeight, state.seed);
     const gfx = buildPieceGraphics(image, cut);
     this.state = state;
-    this.playArea = computePlayArea(state);
     this.view = new PuzzleView(state, gfx, image);
     this.view.setGhostVisible(this.options.ghost);
     this.worldRoot.addChild(this.view.world);
@@ -189,7 +193,6 @@ export class GameController {
     this.app.stage.addChild(this.tray.container);
     this.applyLayout();
     this.refreshTray();
-    this.fitView();
     this.resumedAt = isComplete(state) ? null : performance.now();
     this.events.onProgress(lockedCount(state), state.pieces.length);
     this.invalidate();
@@ -207,9 +210,9 @@ export class GameController {
     return this.state?.pieces.length ?? 0;
   }
 
-  /** Zooms to show the board and every piece lying around it. */
-  fitView(): void {
-    if (this.state) this.camera.fitRect(contentBounds(this.state), 16);
+  /** Optional zooming (pinch, mouse wheel) and moving the zoomed view; off = fixed view. */
+  setZoomEnabled(enabled: boolean): void {
+    this.camera.setZoomEnabled(enabled);
   }
 
   // --- Helpers --------------------------------------------------------------
@@ -307,14 +310,74 @@ export class GameController {
     this.configureCamera(portrait ? w : w - thickness, portrait ? h - thickness : h);
   }
 
+  /**
+   * The base board view is refitted on every resize / rotation: the board plus a slim border
+   * fills the available space (zooming in from there is optional, see setZoomEnabled). Everything visible around it is the play area where loose
+   * pieces may lie; pieces that end up outside it (e.g. after a rotation) are moved back in.
+   */
   private configureCamera(viewW: number, viewH: number): void {
-    if (this.state) {
-      const pieceSize = Math.min(this.state.pieceWidth, this.state.pieceHeight);
-      // Never zoom in further than one piece filling ~45% of the shorter side of the board area.
-      const maxScale = Math.min(4, (Math.min(viewW, viewH) * 0.45) / pieceSize);
-      this.camera.configure(this.playArea, maxScale);
-    }
     this.camera.setViewSize(viewW, viewH);
+    const state = this.state;
+    if (!state) return;
+    const cell = Math.max(state.pieceWidth, state.pieceHeight);
+    const margin = Math.min(
+      cell * BOARD_MARGIN_CELLS,
+      Math.max(state.imageWidth, state.imageHeight) * BOARD_MARGIN_MAX,
+    );
+    this.camera.setArea({
+      x: -margin,
+      y: -margin,
+      width: state.imageWidth + 2 * margin,
+      height: state.imageHeight + 2 * margin,
+    });
+    // Zoom in at most until one piece fills ~45% of the shorter side of the board area.
+    const pieceSize = Math.min(state.pieceWidth, state.pieceHeight);
+    this.camera.setMaxScale((Math.min(viewW, viewH) * 0.45) / pieceSize);
+    this.playArea = this.camera.playArea();
+    for (const groupId of state.groups.keys()) {
+      if (this.drag?.groupId === groupId) continue;
+      if (this.keepInPlayArea(groupId)) this.view?.syncPieces([...state.groups.get(groupId)!]);
+    }
+  }
+
+  /** Bounds of a group's pieces, tabs included (world units). */
+  private groupBounds(groupId: number): Rect {
+    const state = this.state!;
+    const tab = Math.min(state.pieceWidth, state.pieceHeight) * 0.3;
+    let x0 = Infinity;
+    let y0 = Infinity;
+    let x1 = -Infinity;
+    let y1 = -Infinity;
+    for (const id of state.groups.get(groupId)!) {
+      const p = state.pieces[id];
+      x0 = Math.min(x0, p.x - tab);
+      y0 = Math.min(y0, p.y - tab);
+      x1 = Math.max(x1, p.x + state.pieceWidth + tab);
+      y1 = Math.max(y1, p.y + state.pieceHeight + tab);
+    }
+    return { x: x0, y: y0, width: x1 - x0, height: y1 - y0 };
+  }
+
+  /** Moves a loose group by (dx, dy), but never (partly) out of the play area. True if moved. */
+  private moveWithinPlayArea(groupId: number, dx: number, dy: number): boolean {
+    const b = this.groupBounds(groupId);
+    const a = this.playArea;
+    const fit = (d: number, lo: number, size: number, aLo: number, aSize: number) =>
+      size >= aSize
+        ? aLo + (aSize - size) / 2 - lo
+        : Math.max(aLo - lo, Math.min(aLo + aSize - lo - size, d));
+    dx = fit(dx, b.x, b.width, a.x, a.width);
+    dy = fit(dy, b.y, b.height, a.y, a.height);
+    if (dx === 0 && dy === 0) return false;
+    moveGroup(this.state!, groupId, dx, dy);
+    return true;
+  }
+
+  private keepInPlayArea(groupId: number): boolean {
+    const state = this.state!;
+    const first = state.pieces[state.groups.get(groupId)![0]];
+    if (first.inTray || first.locked) return false;
+    return this.moveWithinPlayArea(groupId, 0, 0);
   }
 
   // --- Dragging -------------------------------------------------------------
@@ -343,7 +406,8 @@ export class GameController {
     const state = this.state!;
     const groupId = state.pieces[pieceId].group;
     const ids = [...state.groups.get(groupId)!];
-    this.drag = { groupId, ids, lastX: wx, lastY: wy };
+    const anchor = state.pieces[ids[0]];
+    this.drag = { groupId, ids, grabX: wx - anchor.x, grabY: wy - anchor.y };
     this.view!.liftGroup(ids);
     this.invalidate();
   }
@@ -355,13 +419,13 @@ export class GameController {
     sx = Math.max(m, Math.min(this.host.clientWidth - m, sx));
     sy = Math.max(m, Math.min(this.host.clientHeight - m, sy));
     const w = this.camera.screenToWorld(sx, sy);
-    // Keep the finger (and thus the piece) inside the play area.
-    const a = this.playArea;
-    const x = Math.max(a.x, Math.min(a.x + a.width, w.x));
-    const y = Math.max(a.y, Math.min(a.y + a.height, w.y));
-    moveGroup(this.state, this.drag.groupId, x - this.drag.lastX, y - this.drag.lastY);
-    this.drag.lastX = x;
-    this.drag.lastY = y;
+    // The whole group stays inside the play area, which is always fully visible.
+    const anchor = this.state.pieces[this.drag.ids[0]];
+    this.moveWithinPlayArea(
+      this.drag.groupId,
+      w.x - this.drag.grabX - anchor.x,
+      w.y - this.drag.grabY - anchor.y,
+    );
     this.view.syncPieces(this.drag.ids);
     const returnable = this.drag.ids.length === 1 && canReturnToTray(this.state, this.drag.ids[0]);
     this.tray?.setHighlight(returnable && (this.tray?.contains(sx, sy) ?? false));
@@ -395,8 +459,6 @@ export class GameController {
     this.view.dropGroup(allIds, result.locked);
     this.view.animateSnap(drag.ids, result.dx, result.dy, now);
     this.view.syncPieces(allIds);
-    // Pieces must never stay hidden under the tray (groups cannot go back into it).
-    if (!result.snapped) this.slideClearOfTray(result.groupId, now);
 
     if (result.snapped) {
       // Glow on what just connected; for board locks only the dropped pieces, not the whole board.
@@ -411,30 +473,6 @@ export class GameController {
       this.events.onStateChange();
     }
     this.invalidate();
-  }
-
-  /** If any part of a loose group lies under the tray, slides the group out towards the board. */
-  private slideClearOfTray(groupId: number, now: number): void {
-    const state = this.state!;
-    const ids = state.groups.get(groupId)!;
-    const tab = Math.min(state.pieceWidth, state.pieceHeight) * 0.3;
-    let maxX = -Infinity;
-    let maxY = -Infinity;
-    for (const id of ids) {
-      const p = state.pieces[id];
-      maxX = Math.max(maxX, p.x + state.pieceWidth + tab);
-      maxY = Math.max(maxY, p.y + state.pieceHeight + tab);
-    }
-    const { scale, x: camX, y: camY } = this.camera;
-    const r = this.trayRect;
-    const gap = 8;
-    const overlap =
-      r.axis === 'x' ? maxY * scale + camY - (r.y - gap) : maxX * scale + camX - (r.x - gap);
-    if (overlap <= 0) return;
-    const dx = r.axis === 'y' ? -overlap / scale : 0;
-    const dy = r.axis === 'x' ? -overlap / scale : 0;
-    moveGroup(state, groupId, dx, dy);
-    this.view!.animateSnap(ids, dx, dy, now);
   }
 
   // --- Clock ----------------------------------------------------------------

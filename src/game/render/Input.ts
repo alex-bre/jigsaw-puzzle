@@ -50,10 +50,11 @@ type Mode =
 
 /**
  * Pointer handling on the canvas.
- * Board: one finger on a piece drags it, on empty space pans; two fingers pinch-zoom.
- * Tray: swiping along the tray scrolls it; pulling a piece out of the tray (or holding it)
- * picks it up; its arrow buttons scroll it a page. Mouse wheel zooms the board or scrolls the
- * tray.
+ * Board: one finger on a piece drags it. If zooming is enabled in the settings, one finger on
+ * empty space moves the view, two fingers pinch-zoom and the mouse wheel zooms; otherwise the
+ * board view is fixed. Tray: swiping along the tray scrolls it; pulling a piece out of the tray
+ * (or holding it) picks it up; its arrow buttons scroll it a page. The mouse wheel over the tray
+ * scrolls it.
  */
 export class Input {
   private readonly pointers = new Map<number, Pointer>();
@@ -105,43 +106,39 @@ export class Input {
       /* not critical */
     }
 
-    const busy = this.mode.kind === 'drag' || this.mode.kind.startsWith('tray');
-    if (busy) return; // ignore extra fingers while dragging a piece or using the tray
-    if (this.pointers.size === 1) {
-      const direction = this.handlers.trayButtonAt(p.x, p.y);
-      if (direction !== null) {
-        this.handlers.trayStep(direction);
-        this.mode = { kind: 'tray-button', pointerId: e.pointerId };
-      } else if (this.handlers.inTray(p.x, p.y)) {
-        this.handlers.trayStop();
-        const pieceId = this.handlers.trayPieceAt(p.x, p.y);
-        const pointerId = e.pointerId;
-        const timer = window.setTimeout(() => {
-          if (
-            this.mode.kind === 'tray-pending' &&
-            this.mode.pointerId === pointerId &&
-            pieceId !== null
-          ) {
-            const cur = this.pointers.get(pointerId) ?? p;
-            this.startTrayDrag(pointerId, pieceId, cur.x, cur.y);
-          }
-        }, LONG_PRESS_MS);
-        this.mode = { kind: 'tray-pending', pointerId, startX: p.x, startY: p.y, pieceId, timer };
-      } else if (this.handlers.pickFromBoard(p.x, p.y)) {
-        this.mode = { kind: 'drag', pointerId: e.pointerId };
-      } else {
-        this.mode = { kind: 'pan', pointerId: e.pointerId };
-      }
-    } else if (this.pointers.size === 2) {
-      this.startPinch();
+    // A second finger on the board starts a pinch (if zooming is enabled).
+    if (this.pointers.size === 2 && this.camera.zoomable) {
+      const m = this.mode.kind;
+      if (m === 'idle' || m === 'pan') this.startPinch();
+      return;
+    }
+    // Otherwise only the first finger counts; extra fingers are ignored.
+    if (this.mode.kind !== 'idle' || this.pointers.size !== 1) return;
+    const direction = this.handlers.trayButtonAt(p.x, p.y);
+    if (direction !== null) {
+      this.handlers.trayStep(direction);
+      this.mode = { kind: 'tray-button', pointerId: e.pointerId };
+    } else if (this.handlers.inTray(p.x, p.y)) {
+      this.handlers.trayStop();
+      const pieceId = this.handlers.trayPieceAt(p.x, p.y);
+      const pointerId = e.pointerId;
+      const timer = window.setTimeout(() => {
+        if (
+          this.mode.kind === 'tray-pending' &&
+          this.mode.pointerId === pointerId &&
+          pieceId !== null
+        ) {
+          const cur = this.pointers.get(pointerId) ?? p;
+          this.startTrayDrag(pointerId, pieceId, cur.x, cur.y);
+        }
+      }, LONG_PRESS_MS);
+      this.mode = { kind: 'tray-pending', pointerId, startX: p.x, startY: p.y, pieceId, timer };
+    } else if (this.handlers.pickFromBoard(p.x, p.y)) {
+      this.mode = { kind: 'drag', pointerId: e.pointerId };
+    } else if (this.camera.zoomable) {
+      this.mode = { kind: 'pan', pointerId: e.pointerId };
     }
   };
-
-  private startTrayDrag(pointerId: number, pieceId: number, sx: number, sy: number): void {
-    this.cancelTimer();
-    this.mode = { kind: 'drag', pointerId };
-    this.handlers.pickFromTray(pieceId, sx, sy);
-  }
 
   private startPinch(): void {
     const [a, b] = [...this.pointers.values()];
@@ -154,6 +151,12 @@ export class Input {
       anchorX: anchor.x,
       anchorY: anchor.y,
     };
+  }
+
+  private startTrayDrag(pointerId: number, pieceId: number, sx: number, sy: number): void {
+    this.cancelTimer();
+    this.mode = { kind: 'drag', pointerId };
+    this.handlers.pickFromTray(pieceId, sx, sy);
   }
 
   private onMove = (e: PointerEvent): void => {
@@ -237,6 +240,7 @@ export class Input {
       this.handlers.trayScroll(-delta);
       return;
     }
+    if (!this.camera.zoomable) return;
     const factor = Math.exp(-e.deltaY * unit * 0.0015);
     this.camera.zoomAt(p.x, p.y, this.camera.scale * factor);
   };

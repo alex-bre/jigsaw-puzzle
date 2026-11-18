@@ -89,6 +89,8 @@ export interface Choice<T> {
 
 export interface ChoiceGroupOptions<T> {
   label: string;
+  /** Short explanation under the label. */
+  hint?: string;
   options: Choice<T>[];
   selected: T;
   onSelect: (value: T) => void;
@@ -117,6 +119,7 @@ export function choiceGroup<T extends string | number | boolean>(
     'section',
     { class: 'field' },
     h('h2', { class: 'field-label', id }, o.label),
+    o.hint ? h('p', { class: 'muted field-hint' }, o.hint) : null,
     h('div', { class: 'choice-group', role: 'group', 'aria-labelledby': id }, ...buttons),
   );
 }

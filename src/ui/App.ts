@@ -431,12 +431,6 @@ export class App {
         onClick: () => navigate({ name: 'home' }),
       }),
       this.progressEl,
-      button({
-        label: t('fitView'),
-        icon: 'fit',
-        size: 'sm',
-        onClick: () => this.game.fitView(),
-      }),
     );
     const helperToggle = (
       key: keyof typeof this.helpers,
@@ -497,7 +491,6 @@ export class App {
           block: true,
           onClick: () => {
             this.doneDialog.close();
-            this.game.fitView();
           },
         }),
         button({
@@ -571,6 +564,7 @@ export class App {
     const color = BACKGROUNDS[this.settings.background];
     this.root.style.setProperty('--felt', color);
     this.game.setBackground(color);
+    this.game.setZoomEnabled(this.settings.zoom);
   }
 }
 
